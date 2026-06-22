@@ -159,8 +159,9 @@
     text-align: center;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-bottom: 1px solid var(--ciiic-gray-300);
-    border-right: 1px solid var(--ciiic-gray-300);
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,7 +169,12 @@
   }
   .col-head:last-child { border-right: none; }
 
-  .cell { padding: 0.875rem 1rem; border-right: 1px solid var(--ciiic-gray-300); min-height: 52px; }
+  .col-head .tip-icon {
+    border-color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .cell { padding: 0.875rem 1rem; border-right: 1px solid rgba(20, 21, 19, 0.08); min-height: 52px; }
   .cell:last-child { border-right: none; }
 
   .glossary-tip {
@@ -224,9 +230,25 @@
     color: var(--text-muted);
   }
 
+  .glossary-popover-desc {
+    margin-bottom: 0.75rem;
+  }
+
+  .glossary-popover-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 11px;
+  }
+
+  .glossary-popover-meta strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
   .entry { display: flex; align-items: flex-start; gap: 7px; padding: 6px 4px; border-bottom: 1px solid rgba(20, 21, 19, 0.06); cursor: pointer; border-radius: var(--radius-sm); transition: background 0.15s ease; }
   .entry:last-child { border-bottom: none; }
-  .entry:hover { background: rgba(255, 255, 255, 0.55); }
+  .entry:hover { background: rgba(255, 255, 255, 0.35); }
 
   .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; background: var(--gray-200); }
 
@@ -278,7 +300,7 @@
 
   <footer>
     <div class="legend" id="legend"></div>
-    <div class="footer-note">* active across multiple verticals &nbsp;·&nbsp; Data: CIIIC / Redactielokaal</div>
+    <div class="footer-note" id="footer-note"></div>
   </footer>
 
   <div class="page-meta">
@@ -295,12 +317,12 @@
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
 
 const VERTICAL_PALETTE = [
-  { accent: '#39766d' },
-  { accent: '#7b9108' },
-  { accent: '#6b52c4' },
-  { accent: '#2d6a4f' },
-  { accent: '#9f1239' },
-  { accent: '#115e59' }
+  { header: '#1a4540', accent: '#39766d' },
+  { header: '#3f4a12', accent: '#7b9108' },
+  { header: '#352a58', accent: '#6b52c4' },
+  { header: '#1e3a36', accent: '#2d6a4f' },
+  { header: '#4a1f2e', accent: '#9f1239' },
+  { header: '#123836', accent: '#115e59' }
 ];
 
 const LAYER_BAND_PALETTE = [
@@ -312,7 +334,7 @@ const LAYER_BAND_PALETTE = [
   { bg: '#1a2e2c', color: '#ffffff' }
 ];
 
-const LAYER_CELL_LIGHTNESS = [97.5, 94.5, 91.5];
+const LAYER_CELL_LIGHTNESS = [86, 79, 72];
 
 const STATUS_DOT_COLORS = [
   'var(--gray-200)',
@@ -388,13 +410,13 @@ function layerCellLightness(layerIndex, layerCount) {
   return LAYER_CELL_LIGHTNESS[0] - step * layerIndex;
 }
 
-function verticalTheme(accentHex, layerIndex, layerCount) {
-  const { h } = hexToHsl(accentHex);
+function verticalTheme(palette, layerIndex, layerCount) {
+  const { h, s } = hexToHsl(palette.accent);
   const cellLightness = layerCellLightness(layerIndex, layerCount);
   return {
-    headerBg: hslToHex(h, 38, 92),
-    headerColor: accentHex,
-    cellBg: hslToHex(h, 28, cellLightness)
+    headerBg: palette.header,
+    headerColor: '#ffffff',
+    cellBg: hslToHex(h, Math.max(s, 32), cellLightness)
   };
 }
 
@@ -404,17 +426,6 @@ function parseGlossary(rows) {
     if (row['Term']) map[row['Term']] = row['Description'] || '';
   });
   return map;
-}
-
-function applyPageCopy(glossary) {
-  const header = glossary['Header'] || 'Dutch IX industry map';
-  const subheader = glossary['Subheader'] || '';
-  const intro = glossary['Intro'] || '';
-
-  document.title = header;
-  document.getElementById('page-header').textContent = header;
-  document.getElementById('page-subheader').textContent = subheader;
-  document.getElementById('page-intro').textContent = intro;
 }
 
 function applyPageCopy(glossary) {
@@ -493,6 +504,49 @@ function showGlossaryPopover(el, term, text) {
   positionGlossaryPopover(el);
 }
 
+function formatRecordCount(count) {
+  return `${count} Record${count !== 1 ? 's' : ''}`;
+}
+
+function showEntryPopover(el, entry, layer, vertical, count) {
+  clearTimeout(glossaryHideTimer);
+  initGlossaryPopover();
+
+  const title = (entry['Entry'] || '').replace(/\*+$/, '').trim();
+  glossaryPopover.querySelector('.glossary-popover-title').textContent = title;
+
+  const body = glossaryPopover.querySelector('.glossary-popover-body');
+  body.innerHTML = '';
+
+  const description = entry['Description'] || '';
+  if (description) {
+    const desc = document.createElement('p');
+    desc.className = 'glossary-popover-desc';
+    desc.textContent = description;
+    body.appendChild(desc);
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'glossary-popover-meta';
+
+  const verticalLine = document.createElement('div');
+  verticalLine.innerHTML = '<strong>Vertical:</strong> ';
+  verticalLine.append(document.createTextNode(vertical.name));
+
+  const layerLine = document.createElement('div');
+  layerLine.innerHTML = '<strong>Layer:</strong> ';
+  layerLine.append(document.createTextNode(layer.name));
+
+  const recordsLine = document.createElement('div');
+  recordsLine.textContent = formatRecordCount(count);
+
+  meta.append(verticalLine, layerLine, recordsLine);
+  body.appendChild(meta);
+
+  glossaryPopover.hidden = false;
+  positionGlossaryPopover(el);
+}
+
 function hideGlossaryPopover() {
   clearTimeout(glossaryHideTimer);
   if (glossaryPopover) glossaryPopover.hidden = true;
@@ -505,24 +559,12 @@ function scheduleHideGlossaryPopover() {
   }
 }
 
-function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
-  const resolved = resolveGlossaryText(glossary, keys, fallback);
-  if (!resolved || !resolved.text) return;
-
+function attachPopoverTip(el, open) {
   el.classList.add('glossary-tip');
   el.setAttribute('tabindex', '0');
   el.setAttribute('role', 'button');
   el.setAttribute('aria-describedby', 'glossary-popover');
 
-  if (showIcon) {
-    const icon = document.createElement('span');
-    icon.className = 'tip-icon';
-    icon.textContent = '?';
-    icon.setAttribute('aria-hidden', 'true');
-    el.appendChild(icon);
-  }
-
-  const open = () => showGlossaryPopover(el, resolved.term, resolved.text);
   const pin = (e) => {
     e.stopPropagation();
     glossaryPinned = !glossaryPinned;
@@ -543,6 +585,25 @@ function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
   });
 }
 
+function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
+  const resolved = resolveGlossaryText(glossary, keys, fallback);
+  if (!resolved || !resolved.text) return;
+
+  if (showIcon) {
+    const icon = document.createElement('span');
+    icon.className = 'tip-icon';
+    icon.textContent = '?';
+    icon.setAttribute('aria-hidden', 'true');
+    el.appendChild(icon);
+  }
+
+  attachPopoverTip(el, () => showGlossaryPopover(el, resolved.term, resolved.text));
+}
+
+function attachEntryTip(el, entry, layer, vertical, count) {
+  attachPopoverTip(el, () => showEntryPopover(el, entry, layer, vertical, count));
+}
+
 function layerGlossaryKeys(layer) {
   return [layer.name, layer.name.replace(/\s*layer\s*$/i, ' Layer'), 'Layer'];
 }
@@ -558,6 +619,24 @@ function statusDotColor(statusLabel, index) {
   if (label.includes('not active')) return 'var(--gray-100)';
   if (label.includes('under review') || label.includes('review')) return 'var(--ciiic-warning)';
   return STATUS_DOT_COLORS[index % STATUS_DOT_COLORS.length];
+}
+
+function renderFooterNote(glossary) {
+  const footerNote = document.getElementById('footer-note');
+  if (!footerNote) return;
+  footerNote.innerHTML = '';
+
+  const star = document.createElement('span');
+  star.textContent = '*';
+  if (glossary['* (asterisk on entry)']) {
+    attachGlossaryTip(star, glossary, ['* (asterisk on entry)'], glossary['* (asterisk on entry)'], false);
+  }
+  footerNote.appendChild(star);
+  footerNote.append(' active across multiple verticals \u00a0·\u00a0 ');
+
+  const copyright = document.createElement('span');
+  copyright.textContent = glossary['Copyright'] || '';
+  footerNote.appendChild(copyright);
 }
 
 function renderLegend(statuses, glossary) {
@@ -580,17 +659,6 @@ function renderLegend(statuses, glossary) {
     attachGlossaryTip(item, glossary, [status.label, 'Entry'], status.description, false);
     legend.appendChild(item);
   });
-
-  const footerNote = document.querySelector('.footer-note');
-  if (footerNote && glossary['* (asterisk on entry)']) {
-    footerNote.innerHTML = '';
-    const star = document.createElement('span');
-    star.className = 'glossary-tip';
-    star.textContent = '*';
-    attachGlossaryTip(star, glossary, ['* (asterisk on entry)'], glossary['* (asterisk on entry)'], false);
-    footerNote.appendChild(star);
-    footerNote.append(' active across multiple verticals \u00a0·\u00a0 Data: CIIIC / Redactielokaal');
-  }
 }
 
 function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary) {
@@ -615,7 +683,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
 
     verticals.forEach((vertical, verticalIndex) => {
       const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
-      const theme = verticalTheme(palette.accent, layerIndex, layers.length);
+      const theme = verticalTheme(palette, layerIndex, layers.length);
       const col = document.createElement('div');
       col.className = 'col-head';
       col.style.background = theme.headerBg;
@@ -633,7 +701,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
       const cell = document.createElement('div');
       cell.className = 'cell';
       const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
-      const theme = verticalTheme(palette.accent, layerIndex, layers.length);
+      const theme = verticalTheme(palette, layerIndex, layers.length);
       cell.style.background = theme.cellBg;
 
       const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
@@ -643,11 +711,9 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         const statusLabel = statusMap[statusId] || '';
         const statusIndex = statusIndexById[statusId] ?? 0;
         const count = orgCountMap[entry['Entry_ID']] || 0;
-        const hasAsterisk = entry['Entry'] && entry['Entry'].includes('*');
 
         const el = document.createElement('div');
         el.className = 'entry';
-        el.title = entry['Description'] || '';
 
         const dot = document.createElement('div');
         dot.className = 'dot';
@@ -668,12 +734,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         text.appendChild(countBadge);
         el.appendChild(dot);
         el.appendChild(text);
-
-        if (hasAsterisk) {
-          attachGlossaryTip(el, glossary, ['* (asterisk on entry)'], glossary['* (asterisk on entry)'], false);
-        } else if (entry['Description']) {
-          attachGlossaryTip(el, glossary, ['Entry'], entry['Description'], false);
-        }
+        attachEntryTip(el, entry, layer, vertical, count);
 
         cell.appendChild(el);
       });
@@ -752,6 +813,7 @@ async function init() {
     document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleDateString('en-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
     renderLegend(statuses, glossary);
+    renderFooterNote(glossary);
     renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary);
 
   } catch (e) {
