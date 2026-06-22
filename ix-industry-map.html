@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="1.7.3">
+<meta name="version" content="1.7.5">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,7 +52,7 @@
   }
 
   header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.25rem;
     text-align: center;
   }
 
@@ -92,6 +92,10 @@
     margin-right: auto;
   }
   header .intro:empty { display: none; }
+
+  header .intro-version {
+    color: var(--text-muted);
+  }
 
   .page-meta {
     display: flex;
@@ -324,7 +328,13 @@
     align-items: center;
     text-align: center;
   }
-  .legend { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .legend {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 1.75rem;
+  }
   .legend-item {
     display: flex;
     align-items: center;
@@ -405,12 +415,13 @@
     <p class="intro" id="page-intro"></p>
   </header>
 
+  <div class="legend" id="legend"></div>
+
   <div class="matrix" id="matrix">
     <div id="matrix-body"><div class="loading">Loading data…</div></div>
   </div>
 
   <footer>
-    <div class="legend" id="legend"></div>
     <div class="footer-note" id="footer-note"></div>
   </footer>
 
@@ -491,11 +502,21 @@ function applyPageCopy(glossary) {
   const header = glossary['Header'] || 'Dutch IX industry map';
   const subheader = glossary['Subheader'] || '';
   const intro = glossary['Intro'] || '';
+  const version = document.querySelector('meta[name="version"]')?.content || '';
 
   document.title = header;
   document.getElementById('page-header').textContent = header;
   document.getElementById('page-subheader').textContent = subheader;
-  document.getElementById('page-intro').textContent = intro;
+
+  const introEl = document.getElementById('page-intro');
+  introEl.textContent = '';
+  if (intro) introEl.append(document.createTextNode(intro));
+  if (version) {
+    const versionSpan = document.createElement('span');
+    versionSpan.className = 'intro-version';
+    versionSpan.textContent = (intro ? ' · ' : '') + `Version ${version}`;
+    introEl.appendChild(versionSpan);
+  }
 }
 
 let glossaryPopover = null;
