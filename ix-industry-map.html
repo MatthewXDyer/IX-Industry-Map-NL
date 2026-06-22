@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="1.7.0">
+<meta name="version" content="1.7.2">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,10 +139,18 @@
     gap: 8px;
   }
 
-  .matrix-row {
+  .layer-grid {
     display: grid;
     grid-template-columns: repeat(var(--vertical-count), 1fr);
   }
+
+  .vertical-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-right: 1px solid var(--border-subtle);
+  }
+  .vertical-column:last-child { border-right: none; }
 
   .col-head {
     padding: 0.875rem 1rem;
@@ -154,13 +162,11 @@
     text-transform: uppercase;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
   }
-  .col-head:last-child { border-right: none; }
 
   .col-head .tip-icon,
   .layer-band .tip-icon {
@@ -170,11 +176,10 @@
 
   .cell {
     padding: 0.875rem 1rem;
-    border-right: 1px solid var(--border-subtle);
     min-height: 52px;
     color: var(--text-primary);
+    flex: 1;
   }
-  .cell:last-child { border-right: none; }
 
   .glossary-tip { cursor: help; position: relative; }
 
@@ -226,6 +231,24 @@
 
   .glossary-popover-desc { margin-bottom: 0.75rem; color: var(--text-muted); }
 
+  .glossary-popover-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .glossary-popover-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
   .glossary-popover-meta {
     display: flex;
     flex-direction: column;
@@ -258,7 +281,7 @@
     border-radius: 50%;
     flex-shrink: 0;
     margin-top: 5px;
-    background: var(--ciiic-lime);
+    background: #888888;
   }
 
   .entry-text { flex: 1; }
@@ -317,6 +340,59 @@
     font-family: var(--font-body);
     font-size: 0.6875rem;
     color: var(--text-muted);
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 1.5rem 0.75rem 2rem; }
+
+    header { margin-bottom: 1.75rem; }
+    header h1 { font-size: 1.375rem; letter-spacing: 0.05em; }
+    header .subheader { font-size: 0.9375rem; }
+    header .intro { font-size: 0.875rem; }
+
+    .layer-band {
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+    }
+
+    .layer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .vertical-column {
+      border-right: none;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .vertical-column:last-child { border-bottom: none; }
+
+    .col-head {
+      text-align: left;
+      justify-content: flex-start;
+      padding: 0.75rem 1rem;
+      font-size: 0.625rem;
+      letter-spacing: 0.08em;
+    }
+
+    .cell {
+      padding: 0.75rem 1rem;
+      min-height: auto;
+    }
+
+    .entry-name { font-size: 0.875rem; }
+
+    .legend {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .glossary-popover {
+      max-width: min(300px, calc(100vw - 1.5rem));
+    }
+
+    .page-meta { gap: 0.5rem; }
+    .badge { font-size: 0.625rem; }
   }
 </style>
 </head>
@@ -491,7 +567,7 @@ function formatRecordCount(count) {
   return `${count} Record${count !== 1 ? 's' : ''}`;
 }
 
-function showEntryPopover(el, entry, layer, vertical, count) {
+function showEntryPopover(el, entry, layer, vertical, count, statusLabel) {
   clearTimeout(glossaryHideTimer);
   initGlossaryPopover();
 
@@ -500,6 +576,21 @@ function showEntryPopover(el, entry, layer, vertical, count) {
 
   const body = glossaryPopover.querySelector('.glossary-popover-body');
   body.innerHTML = '';
+
+  if (statusLabel) {
+    const statusRow = document.createElement('div');
+    statusRow.className = 'glossary-popover-status';
+
+    const statusDot = document.createElement('span');
+    statusDot.className = 'glossary-popover-status-dot';
+    statusDot.style.background = statusDotColor(statusLabel);
+
+    const statusText = document.createElement('span');
+    statusText.textContent = statusLabel;
+
+    statusRow.append(statusDot, statusText);
+    body.appendChild(statusRow);
+  }
 
   const description = entry['Description'] || '';
   if (description) {
@@ -583,8 +674,8 @@ function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
   attachPopoverTip(el, () => showGlossaryPopover(el, resolved.term, resolved.text));
 }
 
-function attachEntryTip(el, entry, layer, vertical, count) {
-  attachPopoverTip(el, () => showEntryPopover(el, entry, layer, vertical, count));
+function attachEntryTip(el, entry, layer, vertical, count, statusLabel) {
+  attachPopoverTip(el, () => showEntryPopover(el, entry, layer, vertical, count, statusLabel));
 }
 
 function layerGlossaryKeys(layer) {
@@ -660,40 +751,38 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     attachGlossaryTip(band, glossary, layerGlossaryKeys(layer), layer.description, true);
     block.appendChild(band);
 
-    const headRow = document.createElement('div');
-    headRow.className = 'matrix-row';
+    const layerGrid = document.createElement('div');
+    layerGrid.className = 'layer-grid';
 
     verticals.forEach((vertical, verticalIndex) => {
       const theme = verticalTheme(verticalIndex, layerIndex);
+      const column = document.createElement('div');
+      column.className = 'vertical-column';
+
       const col = document.createElement('div');
       col.className = 'col-head';
       col.style.background = theme.headerBg;
       col.style.color = theme.headerColor;
       col.appendChild(document.createTextNode(vertical.name));
       attachGlossaryTip(col, glossary, verticalGlossaryKeys(vertical), vertical.description, true);
-      headRow.appendChild(col);
-    });
-    block.appendChild(headRow);
+      column.appendChild(col);
 
-    const contentRow = document.createElement('div');
-    contentRow.className = 'matrix-row';
-
-    verticals.forEach((vertical, verticalIndex) => {
       const cell = document.createElement('div');
       cell.className = 'cell';
-      const theme = verticalTheme(verticalIndex, layerIndex);
       cell.style.background = theme.cellBg;
 
       const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
 
       cellEntries.forEach(entry => {
         const count = orgCountMap[entry['Entry_ID']] || 0;
+        const statusLabel = statusMap[entry['Validation Status']] || '';
 
         const el = document.createElement('div');
         el.className = 'entry';
 
         const dot = document.createElement('div');
         dot.className = 'dot';
+        dot.style.background = statusDotColor(statusLabel);
 
         const text = document.createElement('div');
         text.className = 'entry-text';
@@ -710,7 +799,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         text.appendChild(countBadge);
         el.appendChild(dot);
         el.appendChild(text);
-        attachEntryTip(el, entry, layer, vertical, count);
+        attachEntryTip(el, entry, layer, vertical, count, statusLabel);
 
         cell.appendChild(el);
       });
@@ -719,10 +808,11 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         cell.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.2);">—</span>';
       }
 
-      contentRow.appendChild(cell);
+      column.appendChild(cell);
+      layerGrid.appendChild(column);
     });
 
-    block.appendChild(contentRow);
+    block.appendChild(layerGrid);
     body.appendChild(block);
   });
 }
