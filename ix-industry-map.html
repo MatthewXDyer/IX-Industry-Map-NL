@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.12">
+<meta name="version" content="0.1.13">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -699,12 +699,26 @@ function attachEntryTip(el, entry, layer, vertical, count, statusLabel) {
   attachPopoverTip(el, () => showEntryPopover(el, entry, layer, vertical, count, statusLabel));
 }
 
-function layerGlossaryKeys(layer) {
-  return [layer.name, layer.name.replace(/\s*layer\s*$/i, ' Layer'), 'Layer'];
+function attachSheetTip(el, title, description, showIcon) {
+  if (!description) return;
+
+  if (showIcon) {
+    const icon = document.createElement('span');
+    icon.className = 'tip-icon';
+    icon.textContent = '?';
+    icon.setAttribute('aria-hidden', 'true');
+    el.appendChild(icon);
+  }
+
+  attachPopoverTip(el, () => showGlossaryPopover(el, title, description));
 }
 
-function verticalGlossaryKeys(vertical) {
-  return [`${vertical.name} vertical`, vertical.name, 'Vertical'];
+function attachLayerTip(el, layer, showIcon) {
+  attachSheetTip(el, layer.name, layer.description, showIcon);
+}
+
+function attachVerticalTip(el, vertical, showIcon) {
+  attachSheetTip(el, `Vertical: ${vertical.name}`, vertical.description, showIcon);
 }
 
 function statusDotColor(statusLabel) {
@@ -769,7 +783,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     band.style.background = LAYER_BAND_COLORS[layerIndex] ?? LAYER_BAND_COLORS[LAYER_BAND_COLORS.length - 1];
     band.style.color = '#FFFFFF';
     band.appendChild(document.createTextNode(layer.name));
-    attachGlossaryTip(band, glossary, layerGlossaryKeys(layer), layer.description, true);
+    attachLayerTip(band, layer, true);
     block.appendChild(band);
 
     const layerGrid = document.createElement('div');
@@ -785,7 +799,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
       col.style.background = theme.headerBg;
       col.style.color = theme.headerColor;
       col.appendChild(document.createTextNode(vertical.name));
-      attachGlossaryTip(col, glossary, verticalGlossaryKeys(vertical), vertical.description, true);
+      attachVerticalTip(col, vertical, true);
       column.appendChild(col);
 
       const cell = document.createElement('div');
