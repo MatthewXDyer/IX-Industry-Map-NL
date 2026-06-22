@@ -11,6 +11,9 @@
     --blue-50: #E6F1FB; --blue-800: #0C447C;
     --green-50: #EAF3DE; --green-800: #27500A;
     --amber-50: #FAEEDA; --amber-800: #633806;
+    --purple-50: #F3E8FF; --purple-800: #5B21B6;
+    --rose-50: #FFE4E6; --rose-800: #9F1239;
+    --teal-50: #CCFBF1; --teal-800: #115E59;
     --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-600: #5F5E5A;
     --green-600: #3B6D11;
     --border: rgba(0,0,0,0.12);
@@ -19,6 +22,8 @@
     --text: #1a1a18;
     --text-muted: #5F5E5A;
     --radius: 10px;
+    --row-head-width: 130px;
+    --vertical-count: 3;
   }
 
   body {
@@ -40,18 +45,39 @@
 
   .matrix { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 
-  .matrix-head { display: grid; grid-template-columns: 130px repeat(3, 1fr); }
-  .matrix-head .corner { background: var(--bg-secondary); border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
-  .col-head { padding: 12px 14px; font-size: 11px; font-weight: 500; text-align: center; letter-spacing: 0.3px; text-transform: uppercase; border-bottom: 0.5px solid var(--border); border-right: 0.5px solid var(--border); }
-  .col-head:last-child { border-right: none; }
-  .col-head.applied { background: var(--blue-50); color: var(--blue-800); }
-  .col-head.entertainment { background: var(--green-50); color: var(--green-800); }
-  .col-head.arts { background: var(--amber-50); color: var(--amber-800); }
+  .matrix-head,
+  .matrix-row {
+    display: grid;
+    grid-template-columns: var(--row-head-width) repeat(var(--vertical-count), 1fr);
+  }
 
-  .matrix-row { display: grid; grid-template-columns: 130px repeat(3, 1fr); border-bottom: 0.5px solid var(--border); }
+  .matrix-head .corner { background: var(--bg-secondary); border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .col-head {
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    border-bottom: 0.5px solid var(--border);
+    border-right: 0.5px solid var(--border);
+  }
+  .col-head:last-child { border-right: none; }
+
+  .matrix-row { border-bottom: 0.5px solid var(--border); }
   .matrix-row:last-child { border-bottom: none; }
 
-  .row-head { padding: 14px 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--bg-secondary); border-right: 0.5px solid var(--border); display: flex; align-items: flex-start; line-height: 1.4; }
+  .row-head {
+    padding: 14px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.4;
+  }
 
   .cell { padding: 10px 12px; border-right: 0.5px solid var(--border); }
   .cell:last-child { border-right: none; }
@@ -61,8 +87,6 @@
   .entry:hover { background: var(--bg-secondary); }
 
   .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; background: var(--gray-200); }
-  .dot.validated { background: var(--green-600); }
-  .dot.not-nl { background: var(--gray-100); }
 
   .entry-text { flex: 1; }
   .entry-name { font-size: 11.5px; line-height: 1.4; color: var(--text); }
@@ -86,30 +110,23 @@
     <h1>Dutch IX industry map</h1>
     <p>Immersive Experience sector in the Netherlands — organisations mapped by layer and entry type</p>
     <div class="header-meta">
-      <span class="badge">3 layers</span>
-      <span class="badge">3 verticals</span>
-      <span class="badge" id="entry-count-badge">Loading…</span>
+      <span class="badge" id="layer-count-badge">Loading…</span>
+      <span class="badge" id="vertical-count-badge"></span>
+      <span class="badge" id="entry-count-badge"></span>
       <span class="badge" id="org-count-badge"></span>
       <span class="badge" id="last-updated"></span>
     </div>
   </header>
 
   <div class="matrix" id="matrix">
-    <div class="matrix-head">
+    <div class="matrix-head" id="matrix-head">
       <div class="corner"></div>
-      <div class="col-head applied">Applied &amp; B2B</div>
-      <div class="col-head entertainment">Entertainment &amp; Consumer</div>
-      <div class="col-head arts">Arts &amp; Culture</div>
     </div>
     <div id="matrix-body"><div class="loading">Loading data…</div></div>
   </div>
 
   <footer>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green-600)"></div> Validated in NL</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--gray-200)"></div> Under review</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--gray-100)"></div> Not active in NL</div>
-    </div>
+    <div class="legend" id="legend"></div>
     <div class="footer-note">* active across multiple verticals &nbsp;·&nbsp; Data: CIIIC / Redactielokaal</div>
   </footer>
 
@@ -118,16 +135,20 @@
 <script>
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
 
-const LAYERS = [
-  { id: 'LID001', name: 'Makers layer' },
-  { id: 'LID002', name: 'Middle layer' },
-  { id: 'LID003', name: 'Distribution & delivery' }
+const VERTICAL_PALETTE = [
+  { bg: 'var(--blue-50)', color: 'var(--blue-800)' },
+  { bg: 'var(--green-50)', color: 'var(--green-800)' },
+  { bg: 'var(--amber-50)', color: 'var(--amber-800)' },
+  { bg: 'var(--purple-50)', color: 'var(--purple-800)' },
+  { bg: 'var(--rose-50)', color: 'var(--rose-800)' },
+  { bg: 'var(--teal-50)', color: 'var(--teal-800)' }
 ];
 
-const VERTICALS = [
-  { id: 'VID001', key: 'applied' },
-  { id: 'VID002', key: 'entertainment' },
-  { id: 'VID003', key: 'arts' }
+const STATUS_DOT_COLORS = [
+  'var(--gray-200)',
+  'var(--green-600)',
+  'var(--gray-100)',
+  'var(--gray-600)'
 ];
 
 async function fetchSheet(tabName) {
@@ -141,7 +162,6 @@ async function fetchSheet(tabName) {
   let cols = json.table.cols.map(c => c.label);
   let dataRows = rawRows;
 
-  // Sheet returns parsedNumHeaders:0 — header names are in row 1 as values, not col labels
   if (cols.every(label => !label) && rawRows.length > 0) {
     cols = rawRows[0].c.map(cell => (cell && cell.v != null) ? String(cell.v) : '');
     dataRows = rawRows.slice(1);
@@ -154,16 +174,157 @@ async function fetchSheet(tabName) {
   });
 }
 
+function statusDotColor(statusLabel, index) {
+  const label = (statusLabel || '').toLowerCase();
+  if (label.includes('validated')) return 'var(--green-600)';
+  if (label.includes('only international')) return 'var(--gray-600)';
+  if (label.includes('not active')) return 'var(--gray-100)';
+  if (label.includes('under review') || label.includes('review')) return 'var(--gray-200)';
+  return STATUS_DOT_COLORS[index % STATUS_DOT_COLORS.length];
+}
+
+function renderMatrixHead(verticals) {
+  const head = document.getElementById('matrix-head');
+  head.innerHTML = '<div class="corner"></div>';
+
+  verticals.forEach((vertical, index) => {
+    const palette = VERTICAL_PALETTE[index % VERTICAL_PALETTE.length];
+    const col = document.createElement('div');
+    col.className = 'col-head';
+    col.textContent = vertical.name;
+    col.title = vertical.description || '';
+    col.style.background = palette.bg;
+    col.style.color = palette.color;
+    head.appendChild(col);
+  });
+}
+
+function renderLegend(statuses) {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+
+  statuses.forEach((status, index) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.title = status.description || '';
+
+    const dot = document.createElement('div');
+    dot.className = 'legend-dot';
+    dot.style.background = statusDotColor(status.label, index);
+
+    const label = document.createElement('span');
+    label.textContent = status.label;
+
+    item.appendChild(dot);
+    item.appendChild(label);
+    legend.appendChild(item);
+  });
+}
+
+function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap) {
+  const body = document.getElementById('matrix-body');
+  body.innerHTML = '';
+
+  layers.forEach(layer => {
+    const row = document.createElement('div');
+    row.className = 'matrix-row';
+
+    const rowHead = document.createElement('div');
+    rowHead.className = 'row-head';
+    rowHead.textContent = layer.name;
+    rowHead.title = layer.description || '';
+    row.appendChild(rowHead);
+
+    verticals.forEach(vertical => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+
+      const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
+
+      cellEntries.forEach(entry => {
+        const statusId = entry['Validation Status'];
+        const statusLabel = statusMap[statusId] || '';
+        const statusIndex = statusIndexById[statusId] ?? 0;
+        const count = orgCountMap[entry['Entry_ID']] || 0;
+        const isMulti = entry['Entry'] && entry['Entry'].includes('*');
+
+        const el = document.createElement('div');
+        el.className = 'entry';
+        el.title = entry['Description'] || '';
+
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.background = statusDotColor(statusLabel, statusIndex);
+
+        const text = document.createElement('div');
+        text.className = 'entry-text';
+
+        const name = document.createElement('div');
+        name.className = 'entry-name' + (isMulti ? ' multi' : '');
+        name.textContent = entry['Entry'] || '';
+
+        const countBadge = document.createElement('div');
+        countBadge.className = 'entry-count';
+        countBadge.textContent = count === 0 ? '0 orgs' : `${count} org${count > 1 ? 's' : ''}`;
+
+        text.appendChild(name);
+        text.appendChild(countBadge);
+        el.appendChild(dot);
+        el.appendChild(text);
+        cell.appendChild(el);
+      });
+
+      if (cellEntries.length === 0) {
+        cell.innerHTML = '<span style="font-size:11px;color:var(--gray-100);">—</span>';
+      }
+
+      row.appendChild(cell);
+    });
+
+    body.appendChild(row);
+  });
+}
+
 async function init() {
   try {
-    const [entries, orgEntries, statuses] = await Promise.all([
+    const [layersRaw, verticalsRaw, entries, orgEntries, statusesRaw] = await Promise.all([
+      fetchSheet('Layers'),
+      fetchSheet('Verticals'),
       fetchSheet('Entries'),
       fetchSheet('Org_Entries'),
       fetchSheet('ReviewStatuses')
     ]);
 
+    const layers = layersRaw
+      .filter(row => row['Layer_ID'])
+      .map(row => ({
+        id: row['Layer_ID'],
+        name: row['Layer'] || row['Layer_ID'],
+        description: row['Description'] || ''
+      }));
+
+    const verticals = verticalsRaw
+      .filter(row => row['Vertical_ID'])
+      .map(row => ({
+        id: row['Vertical_ID'],
+        name: row['Vertical'] || row['Vertical_ID'],
+        description: row['Description'] || ''
+      }));
+
+    const statuses = statusesRaw
+      .filter(row => row['ReviewStatus_ID'])
+      .map(row => ({
+        id: row['ReviewStatus_ID'],
+        label: row['Review Status'] || row['ReviewStatus_ID'],
+        description: row['Description'] || ''
+      }));
+
     const statusMap = {};
-    statuses.forEach(s => { if (s['ReviewStatus_ID']) statusMap[s['ReviewStatus_ID']] = s['Review Status']; });
+    const statusIndexById = {};
+    statuses.forEach((status, index) => {
+      statusMap[status.id] = status.label;
+      statusIndexById[status.id] = index;
+    });
 
     const orgCountMap = {};
     orgEntries.forEach(link => {
@@ -171,70 +332,18 @@ async function init() {
       if (eid) orgCountMap[eid] = (orgCountMap[eid] || 0) + 1;
     });
 
-    document.getElementById('entry-count-badge').textContent = `${entries.length} entries`;
+    document.documentElement.style.setProperty('--vertical-count', verticals.length);
+
+    document.getElementById('layer-count-badge').textContent = `${layers.length} layer${layers.length !== 1 ? 's' : ''}`;
+    document.getElementById('vertical-count-badge').textContent = `${verticals.length} vertical${verticals.length !== 1 ? 's' : ''}`;
+    document.getElementById('entry-count-badge').textContent = `${entries.length} entr${entries.length !== 1 ? 'ies' : 'y'}`;
     const totalOrgs = new Set(orgEntries.map(l => l['Organization_ID']).filter(Boolean)).size;
     document.getElementById('org-count-badge').textContent = `${totalOrgs} organisation${totalOrgs !== 1 ? 's' : ''}`;
     document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleDateString('en-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    const body = document.getElementById('matrix-body');
-    body.innerHTML = '';
-
-    LAYERS.forEach(layer => {
-      const row = document.createElement('div');
-      row.className = 'matrix-row';
-
-      const rowHead = document.createElement('div');
-      rowHead.className = 'row-head';
-      rowHead.textContent = layer.name;
-      row.appendChild(rowHead);
-
-      VERTICALS.forEach(vertical => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-
-        const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
-
-        cellEntries.forEach(entry => {
-          const statusLabel = statusMap[entry['Validation Status']] || '';
-          const isValidated = statusLabel === 'Validated';
-          const isNotNL = statusLabel === 'Not Active In NL' || statusLabel === 'Only International';
-          const count = orgCountMap[entry['Entry_ID']] || 0;
-          const isMulti = entry['Entry'] && entry['Entry'].includes('*');
-
-          const el = document.createElement('div');
-          el.className = 'entry';
-          el.title = entry['Description'] || '';
-
-          const dot = document.createElement('div');
-          dot.className = 'dot' + (isValidated ? ' validated' : isNotNL ? ' not-nl' : '');
-
-          const text = document.createElement('div');
-          text.className = 'entry-text';
-
-          const name = document.createElement('div');
-          name.className = 'entry-name' + (isMulti ? ' multi' : '');
-          name.textContent = entry['Entry'] || '';
-
-          const countBadge = document.createElement('div');
-          countBadge.className = 'entry-count';
-          countBadge.textContent = count === 0 ? '0 orgs' : `${count} org${count > 1 ? 's' : ''}`;
-
-          text.appendChild(name);
-          text.appendChild(countBadge);
-          el.appendChild(dot);
-          el.appendChild(text);
-          cell.appendChild(el);
-        });
-
-        if (cellEntries.length === 0) {
-          cell.innerHTML = '<span style="font-size:11px;color:var(--gray-100);">—</span>';
-        }
-
-        row.appendChild(cell);
-      });
-
-      body.appendChild(row);
-    });
+    renderMatrixHead(verticals);
+    renderLegend(statuses);
+    renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap);
 
   } catch (e) {
     document.getElementById('matrix-body').innerHTML = `<div class="error">Could not load data. Make sure the Google Sheet is publicly readable (Share → Anyone with the link → Viewer).<br><br>Error: ${e.message}</div>`;
