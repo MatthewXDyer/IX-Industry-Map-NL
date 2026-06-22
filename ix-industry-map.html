@@ -133,16 +133,25 @@ const VERTICALS = [
 async function fetchSheet(tabName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
   const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${tabName}`);
   const text = await res.text();
   const json = JSON.parse(text.substring(47).slice(0, -2));
-  const cols = json.table.cols.map(c => c.label);
-  return json.table.rows
-    .filter(r => r.c && r.c.some(cell => cell && cell.v !== null))
-    .map(r => {
-      const obj = {};
-      r.c.forEach((cell, i) => { obj[cols[i]] = cell ? cell.v : null; });
-      return obj;
-    });
+  const rawRows = json.table.rows.filter(r => r.c && r.c.some(cell => cell && cell.v !== null));
+
+  let cols = json.table.cols.map(c => c.label);
+  let dataRows = rawRows;
+
+  // Sheet returns parsedNumHeaders:0 — header names are in row 1 as values, not col labels
+  if (cols.every(label => !label) && rawRows.length > 0) {
+    cols = rawRows[0].c.map(cell => (cell && cell.v != null) ? String(cell.v) : '');
+    dataRows = rawRows.slice(1);
+  }
+
+  return dataRows.map(r => {
+    const obj = {};
+    r.c.forEach((cell, i) => { if (cols[i]) obj[cols[i]] = cell ? cell.v : null; });
+    return obj;
+  });
 }
 
 async function init() {
