@@ -1,0 +1,24 @@
+---
+description: Version numbering for ix-industry-map.html
+globs: ix-industry-map.html
+alwaysApply: false
+---
+
+# IX Industry Map — version numbering
+
+The app version lives in `<meta name="version" content="…">` in `ix-industry-map.html`. It is also appended to the intro as `· Version X.Y.Z`.
+
+## Scheme: `0.1.N`
+
+- **Default:** increment **only the last number** (patch), e.g. `0.1.12` → `0.1.13`.
+- **Do this on every code change** to `ix-industry-map.html` unless the user says otherwise.
+- **Middle segment (.2):** only bump `0.1.x` → `0.2.0` (or `0.2.1`) when the user **explicitly** asks to move to `.2` / a new minor version.
+- Never jump to `1.x` or reset the scheme without the user asking.
+
+## Examples
+
+| Situation | Action |
+|-----------|--------|
+| Bug fix, styling, new feature | `0.1.12` → `0.1.13` |
+| User: "move to .2" | `0.1.13` → `0.2.0` (then continue `0.2.1`, `0.2.2`, …) |
+| User sets a specific version | Use exactly what they asked for |
