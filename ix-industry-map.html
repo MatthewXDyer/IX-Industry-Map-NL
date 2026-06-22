@@ -4,105 +4,263 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dutch IX Industry Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
+    /* CIIIC-inspired tokens (from ciiic.nl design system) */
+    --ciiic-darkest: #141513;
+    --ciiic-lightest: #ffffff;
+    --ciiic-primary: #e2fe52;
+    --ciiic-primary-light: #f0fbba;
+    --ciiic-primary-dark: #a3c400;
+    --ciiic-secondary: #39766d;
+    --ciiic-gray-100: #f4f5f9;
+    --ciiic-gray-300: #e3e3e3;
+    --ciiic-gray-600: #727272;
+    --ciiic-gray-900: #4a4a49;
+    --ciiic-success: #009623;
+    --ciiic-info: #a79cf0;
+    --ciiic-warning: #ffc631;
+
     --blue-50: #E6F1FB; --blue-800: #0C447C;
     --green-50: #EAF3DE; --green-800: #27500A;
     --amber-50: #FAEEDA; --amber-800: #633806;
-    --purple-50: #F3E8FF; --purple-800: #5B21B6;
-    --rose-50: #FFE4E6; --rose-800: #9F1239;
-    --teal-50: #CCFBF1; --teal-800: #115E59;
     --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-600: #5F5E5A;
-    --green-600: #3B6D11;
-    --border: rgba(0,0,0,0.12);
-    --bg: #ffffff;
-    --bg-secondary: #F7F6F2;
-    --text: #1a1a18;
-    --text-muted: #5F5E5A;
-    --radius: 10px;
-    --row-head-width: 130px;
+    --green-600: var(--ciiic-success);
+    --border: rgba(20, 21, 19, 0.1);
+    --bg: var(--ciiic-lightest);
+    --bg-secondary: var(--ciiic-gray-100);
+    --text: var(--ciiic-darkest);
+    --text-muted: var(--ciiic-gray-900);
+    --radius: 1rem;
+    --radius-sm: 0.5rem;
+    --shadow-light: 0 0 8px rgba(0, 0, 0, 0.06);
+    --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.08);
     --vertical-count: 3;
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     font-size: 14px;
     color: var(--text);
     background: var(--bg-secondary);
     min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: 2.5rem 1rem 3rem;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  .page { max-width: 1100px; margin: 0 auto; }
+  .page {
+    max-width: 81rem;
+    margin: 0 auto;
+    min-height: calc(100vh - 5rem);
+    display: flex;
+    flex-direction: column;
+  }
 
-  header { margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 0.5px solid var(--border); }
-  header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; }
-  header .subheader { font-size: 15px; font-weight: 500; color: var(--text); margin-top: 6px; letter-spacing: -0.2px; }
+  header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+
+  header .subheader {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ciiic-secondary);
+    margin-top: 0.75rem;
+    letter-spacing: 0.01em;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
   header .subheader:empty { display: none; }
-  header .intro { font-size: 13px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+
+  header .intro {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    margin-top: 0.625rem;
+    line-height: 1.6;
+    max-width: 39rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
   header .intro:empty { display: none; }
-  .header-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap; }
-  .badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text-muted); background: var(--bg); }
 
-  .matrix { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .page-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    margin-top: auto;
+    padding-top: 2rem;
+    flex-wrap: wrap;
+  }
 
-  .matrix-head,
+  .badge {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    border: none;
+    color: var(--ciiic-gray-900);
+    background: var(--ciiic-lightest);
+    box-shadow: var(--shadow-light);
+  }
+
+  .matrix {
+    background: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+
+  .layer-block { border-bottom: 1px solid var(--ciiic-gray-300); }
+  .layer-block:last-child { border-bottom: none; }
+
+  .layer-band {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-left: 4px solid var(--ciiic-primary);
+  }
+
   .matrix-row {
     display: grid;
-    grid-template-columns: var(--row-head-width) repeat(var(--vertical-count), 1fr);
+    grid-template-columns: repeat(var(--vertical-count), 1fr);
   }
 
-  .matrix-head .corner { background: var(--bg-secondary); border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
   .col-head {
-    padding: 12px 14px;
-    font-size: 11px;
-    font-weight: 500;
+    padding: 0.875rem 1rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
     text-align: center;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-bottom: 0.5px solid var(--border);
-    border-right: 0.5px solid var(--border);
+    border-bottom: 1px solid var(--ciiic-gray-300);
+    border-right: 1px solid var(--ciiic-gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
   .col-head:last-child { border-right: none; }
 
-  .matrix-row { border-bottom: 0.5px solid var(--border); }
-  .matrix-row:last-child { border-bottom: none; }
-
-  .row-head {
-    padding: 14px 12px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: var(--bg-secondary);
-    border-right: 0.5px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    line-height: 1.4;
-  }
-
-  .cell { padding: 10px 12px; border-right: 0.5px solid var(--border); }
+  .cell { padding: 0.875rem 1rem; border-right: 1px solid var(--ciiic-gray-300); min-height: 52px; }
   .cell:last-child { border-right: none; }
 
-  .entry { display: flex; align-items: flex-start; gap: 7px; padding: 5px 3px; border-bottom: 0.5px solid rgba(0,0,0,0.06); cursor: pointer; border-radius: 4px; transition: background 0.1s; }
-  .entry:last-child { border-bottom: none; }
-  .entry:hover { background: rgba(255,255,255,0.45); }
+  .glossary-tip {
+    cursor: help;
+    position: relative;
+  }
 
-  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; background: var(--gray-200); }
+  .tip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.75;
+    border: 1px solid currentColor;
+  }
+
+  .layer-band .tip-icon {
+    border-color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.9);
+  }
+
+  .glossary-popover {
+    position: fixed;
+    z-index: 1000;
+    max-width: 300px;
+    padding: 1rem 1.125rem;
+    background: var(--bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+    border-top: 3px solid var(--ciiic-primary);
+  }
+
+  .glossary-popover-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .glossary-popover-body {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  .entry { display: flex; align-items: flex-start; gap: 7px; padding: 6px 4px; border-bottom: 1px solid rgba(20, 21, 19, 0.06); cursor: pointer; border-radius: var(--radius-sm); transition: background 0.15s ease; }
+  .entry:last-child { border-bottom: none; }
+  .entry:hover { background: rgba(255, 255, 255, 0.55); }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; background: var(--gray-200); }
 
   .entry-text { flex: 1; }
-  .entry-name { font-size: 11.5px; line-height: 1.4; color: var(--text); }
-  .entry-count { font-size: 10px; color: var(--text-muted); background: rgba(255,255,255,0.55); border: 0.5px solid var(--border); padding: 1px 6px; border-radius: 10px; white-space: nowrap; margin-top: 3px; display: inline-block; }
+  .entry-name { font-size: 0.8125rem; line-height: 1.45; color: var(--text); font-weight: 500; }
+  .entry-count {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--ciiic-gray-900);
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    margin-top: 4px;
+    display: inline-block;
+    box-shadow: var(--shadow-light);
+  }
 
   .loading { padding: 3rem; text-align: center; font-size: 13px; color: var(--text-muted); }
   .error { padding: 2rem; font-size: 13px; color: #A32D2D; background: #FCEBEB; border-radius: var(--radius); }
 
-  footer { margin-top: 1.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  footer {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    text-align: center;
+  }
+  .legend { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.6875rem; font-weight: 500; color: var(--text-muted); cursor: help; }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .footer-note { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+  .footer-note { font-size: 0.6875rem; color: var(--ciiic-gray-600); }
 </style>
 </head>
 <body>
@@ -112,19 +270,9 @@
     <h1 id="page-header">Loading…</h1>
     <p class="subheader" id="page-subheader"></p>
     <p class="intro" id="page-intro"></p>
-    <div class="header-meta">
-      <span class="badge" id="layer-count-badge">Loading…</span>
-      <span class="badge" id="vertical-count-badge"></span>
-      <span class="badge" id="entry-count-badge"></span>
-      <span class="badge" id="org-count-badge"></span>
-      <span class="badge" id="last-updated"></span>
-    </div>
   </header>
 
   <div class="matrix" id="matrix">
-    <div class="matrix-head" id="matrix-head">
-      <div class="corner"></div>
-    </div>
     <div id="matrix-body"><div class="loading">Loading data…</div></div>
   </div>
 
@@ -133,18 +281,35 @@
     <div class="footer-note">* active across multiple verticals &nbsp;·&nbsp; Data: CIIIC / Redactielokaal</div>
   </footer>
 
+  <div class="page-meta">
+    <span class="badge" id="layer-count-badge">Loading…</span>
+    <span class="badge" id="vertical-count-badge"></span>
+    <span class="badge" id="entry-count-badge"></span>
+    <span class="badge" id="org-count-badge"></span>
+    <span class="badge" id="last-updated"></span>
+  </div>
+
 </div>
 
 <script>
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
 
 const VERTICAL_PALETTE = [
-  { accent: '#0C447C' },
-  { accent: '#27500A' },
-  { accent: '#633806' },
-  { accent: '#5B21B6' },
-  { accent: '#9F1239' },
-  { accent: '#115E59' }
+  { accent: '#39766d' },
+  { accent: '#7b9108' },
+  { accent: '#6b52c4' },
+  { accent: '#2d6a4f' },
+  { accent: '#9f1239' },
+  { accent: '#115e59' }
+];
+
+const LAYER_BAND_PALETTE = [
+  { bg: '#141513', color: '#ffffff' },
+  { bg: '#39766d', color: '#ffffff' },
+  { bg: '#2a2f28', color: '#ffffff' },
+  { bg: '#1e3a36', color: '#ffffff' },
+  { bg: '#3d2b32', color: '#ffffff' },
+  { bg: '#1a2e2c', color: '#ffffff' }
 ];
 
 const LAYER_CELL_LIGHTNESS = [97.5, 94.5, 91.5];
@@ -227,9 +392,9 @@ function verticalTheme(accentHex, layerIndex, layerCount) {
   const { h } = hexToHsl(accentHex);
   const cellLightness = layerCellLightness(layerIndex, layerCount);
   return {
-    headerBg: hslToHex(h, 44, 93),
+    headerBg: hslToHex(h, 38, 92),
     headerColor: accentHex,
-    cellBg: hslToHex(h, 30, cellLightness)
+    cellBg: hslToHex(h, 28, cellLightness)
   };
 }
 
@@ -252,40 +417,156 @@ function applyPageCopy(glossary) {
   document.getElementById('page-intro').textContent = intro;
 }
 
-function statusDotColor(statusLabel, index) {
-  const label = (statusLabel || '').toLowerCase();
-  if (label.includes('validated')) return 'var(--green-600)';
-  if (label.includes('only international')) return 'var(--gray-600)';
-  if (label.includes('not active')) return 'var(--gray-100)';
-  if (label.includes('under review') || label.includes('review')) return 'var(--gray-200)';
-  return STATUS_DOT_COLORS[index % STATUS_DOT_COLORS.length];
+function applyPageCopy(glossary) {
+  const header = glossary['Header'] || 'Dutch IX industry map';
+  const subheader = glossary['Subheader'] || '';
+  const intro = glossary['Intro'] || '';
+
+  document.title = header;
+  document.getElementById('page-header').textContent = header;
+  document.getElementById('page-subheader').textContent = subheader;
+  document.getElementById('page-intro').textContent = intro;
 }
 
-function renderMatrixHead(verticals) {
-  const head = document.getElementById('matrix-head');
-  head.innerHTML = '<div class="corner"></div>';
+let glossaryPopover = null;
+let glossaryHideTimer = null;
+let glossaryPinned = false;
 
-  verticals.forEach((vertical, index) => {
-    const palette = VERTICAL_PALETTE[index % VERTICAL_PALETTE.length];
-    const theme = verticalTheme(palette.accent, 0, 1);
-    const col = document.createElement('div');
-    col.className = 'col-head';
-    col.textContent = vertical.name;
-    col.title = vertical.description || '';
-    col.style.background = theme.headerBg;
-    col.style.color = theme.headerColor;
-    head.appendChild(col);
+function initGlossaryPopover() {
+  if (glossaryPopover) return;
+  glossaryPopover = document.createElement('div');
+  glossaryPopover.id = 'glossary-popover';
+  glossaryPopover.className = 'glossary-popover';
+  glossaryPopover.hidden = true;
+  glossaryPopover.innerHTML = '<div class="glossary-popover-title"></div><div class="glossary-popover-body"></div>';
+  document.body.appendChild(glossaryPopover);
+
+  glossaryPopover.addEventListener('mouseenter', () => clearTimeout(glossaryHideTimer));
+  glossaryPopover.addEventListener('mouseleave', () => {
+    if (!glossaryPinned) hideGlossaryPopover();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (glossaryPinned && !e.target.closest('.glossary-tip') && !e.target.closest('.glossary-popover')) {
+      glossaryPinned = false;
+      hideGlossaryPopover();
+    }
   });
 }
 
-function renderLegend(statuses) {
+function resolveGlossaryText(glossary, keys, fallback) {
+  for (const key of keys) {
+    if (glossary[key]) return { term: key, text: glossary[key] };
+  }
+  if (fallback) return { term: keys[0] || 'Info', text: fallback };
+  return null;
+}
+
+function positionGlossaryPopover(el) {
+  const rect = el.getBoundingClientRect();
+  const pop = glossaryPopover;
+  pop.hidden = false;
+  const margin = 10;
+  let top = rect.bottom + margin;
+  let left = rect.left + rect.width / 2 - pop.offsetWidth / 2;
+
+  if (left + pop.offsetWidth > window.innerWidth - margin) {
+    left = window.innerWidth - pop.offsetWidth - margin;
+  }
+  if (left < margin) left = margin;
+
+  if (top + pop.offsetHeight > window.innerHeight - margin) {
+    top = rect.top - pop.offsetHeight - margin;
+  }
+
+  pop.style.top = `${top}px`;
+  pop.style.left = `${left}px`;
+}
+
+function showGlossaryPopover(el, term, text) {
+  if (!text) return;
+  clearTimeout(glossaryHideTimer);
+  initGlossaryPopover();
+  glossaryPopover.querySelector('.glossary-popover-title').textContent = term;
+  glossaryPopover.querySelector('.glossary-popover-body').textContent = text;
+  glossaryPopover.hidden = false;
+  positionGlossaryPopover(el);
+}
+
+function hideGlossaryPopover() {
+  clearTimeout(glossaryHideTimer);
+  if (glossaryPopover) glossaryPopover.hidden = true;
+}
+
+function scheduleHideGlossaryPopover() {
+  clearTimeout(glossaryHideTimer);
+  if (!glossaryPinned) {
+    glossaryHideTimer = setTimeout(hideGlossaryPopover, 120);
+  }
+}
+
+function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
+  const resolved = resolveGlossaryText(glossary, keys, fallback);
+  if (!resolved || !resolved.text) return;
+
+  el.classList.add('glossary-tip');
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-describedby', 'glossary-popover');
+
+  if (showIcon) {
+    const icon = document.createElement('span');
+    icon.className = 'tip-icon';
+    icon.textContent = '?';
+    icon.setAttribute('aria-hidden', 'true');
+    el.appendChild(icon);
+  }
+
+  const open = () => showGlossaryPopover(el, resolved.term, resolved.text);
+  const pin = (e) => {
+    e.stopPropagation();
+    glossaryPinned = !glossaryPinned;
+    if (glossaryPinned) open();
+    else hideGlossaryPopover();
+  };
+
+  el.addEventListener('mouseenter', open);
+  el.addEventListener('mouseleave', scheduleHideGlossaryPopover);
+  el.addEventListener('focus', open);
+  el.addEventListener('blur', scheduleHideGlossaryPopover);
+  el.addEventListener('click', pin);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      pin(e);
+    }
+  });
+}
+
+function layerGlossaryKeys(layer) {
+  return [layer.name, layer.name.replace(/\s*layer\s*$/i, ' Layer'), 'Layer'];
+}
+
+function verticalGlossaryKeys(vertical) {
+  return [`${vertical.name} vertical`, vertical.name, 'Vertical'];
+}
+
+function statusDotColor(statusLabel, index) {
+  const label = (statusLabel || '').toLowerCase();
+  if (label.includes('validated')) return 'var(--ciiic-success)';
+  if (label.includes('only international')) return 'var(--ciiic-gray-600)';
+  if (label.includes('not active')) return 'var(--gray-100)';
+  if (label.includes('under review') || label.includes('review')) return 'var(--ciiic-warning)';
+  return STATUS_DOT_COLORS[index % STATUS_DOT_COLORS.length];
+}
+
+function renderLegend(statuses, glossary) {
   const legend = document.getElementById('legend');
   legend.innerHTML = '';
 
   statuses.forEach((status, index) => {
     const item = document.createElement('div');
     item.className = 'legend-item';
-    item.title = status.description || '';
 
     const dot = document.createElement('div');
     dot.className = 'legend-dot';
@@ -296,23 +577,57 @@ function renderLegend(statuses) {
 
     item.appendChild(dot);
     item.appendChild(label);
+    attachGlossaryTip(item, glossary, [status.label, 'Entry'], status.description, false);
     legend.appendChild(item);
   });
+
+  const footerNote = document.querySelector('.footer-note');
+  if (footerNote && glossary['* (asterisk on entry)']) {
+    footerNote.innerHTML = '';
+    const star = document.createElement('span');
+    star.className = 'glossary-tip';
+    star.textContent = '*';
+    attachGlossaryTip(star, glossary, ['* (asterisk on entry)'], glossary['* (asterisk on entry)'], false);
+    footerNote.appendChild(star);
+    footerNote.append(' active across multiple verticals \u00a0·\u00a0 Data: CIIIC / Redactielokaal');
+  }
 }
 
-function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap) {
+function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary) {
   const body = document.getElementById('matrix-body');
   body.innerHTML = '';
 
   layers.forEach((layer, layerIndex) => {
-    const row = document.createElement('div');
-    row.className = 'matrix-row';
+    const block = document.createElement('div');
+    block.className = 'layer-block';
 
-    const rowHead = document.createElement('div');
-    rowHead.className = 'row-head';
-    rowHead.textContent = layer.name;
-    rowHead.title = layer.description || '';
-    row.appendChild(rowHead);
+    const bandPalette = LAYER_BAND_PALETTE[layerIndex % LAYER_BAND_PALETTE.length];
+    const band = document.createElement('div');
+    band.className = 'layer-band';
+    band.style.background = bandPalette.bg;
+    band.style.color = bandPalette.color;
+    band.appendChild(document.createTextNode(layer.name));
+    attachGlossaryTip(band, glossary, layerGlossaryKeys(layer), layer.description, true);
+    block.appendChild(band);
+
+    const headRow = document.createElement('div');
+    headRow.className = 'matrix-row';
+
+    verticals.forEach((vertical, verticalIndex) => {
+      const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
+      const theme = verticalTheme(palette.accent, layerIndex, layers.length);
+      const col = document.createElement('div');
+      col.className = 'col-head';
+      col.style.background = theme.headerBg;
+      col.style.color = theme.headerColor;
+      col.appendChild(document.createTextNode(vertical.name));
+      attachGlossaryTip(col, glossary, verticalGlossaryKeys(vertical), vertical.description, true);
+      headRow.appendChild(col);
+    });
+    block.appendChild(headRow);
+
+    const contentRow = document.createElement('div');
+    contentRow.className = 'matrix-row';
 
     verticals.forEach((vertical, verticalIndex) => {
       const cell = document.createElement('div');
@@ -328,6 +643,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         const statusLabel = statusMap[statusId] || '';
         const statusIndex = statusIndexById[statusId] ?? 0;
         const count = orgCountMap[entry['Entry_ID']] || 0;
+        const hasAsterisk = entry['Entry'] && entry['Entry'].includes('*');
 
         const el = document.createElement('div');
         el.className = 'entry';
@@ -352,17 +668,25 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         text.appendChild(countBadge);
         el.appendChild(dot);
         el.appendChild(text);
+
+        if (hasAsterisk) {
+          attachGlossaryTip(el, glossary, ['* (asterisk on entry)'], glossary['* (asterisk on entry)'], false);
+        } else if (entry['Description']) {
+          attachGlossaryTip(el, glossary, ['Entry'], entry['Description'], false);
+        }
+
         cell.appendChild(el);
       });
 
       if (cellEntries.length === 0) {
-        cell.innerHTML = '<span style="font-size:11px;color:var(--gray-100);">—</span>';
+        cell.innerHTML = '<span style="font-size:11px;color:var(--gray-200);">—</span>';
       }
 
-      row.appendChild(cell);
+      contentRow.appendChild(cell);
     });
 
-    body.appendChild(row);
+    block.appendChild(contentRow);
+    body.appendChild(block);
   });
 }
 
@@ -377,7 +701,9 @@ async function init() {
       fetchSheet('Glossary')
     ]);
 
-    applyPageCopy(parseGlossary(glossaryRaw));
+    const glossary = parseGlossary(glossaryRaw);
+    applyPageCopy(glossary);
+    initGlossaryPopover();
 
     const layers = layersRaw
       .filter(row => row['Layer_ID'])
@@ -425,9 +751,8 @@ async function init() {
     document.getElementById('org-count-badge').textContent = `${totalOrgs} organisation${totalOrgs !== 1 ? 's' : ''}`;
     document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleDateString('en-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    renderMatrixHead(verticals);
-    renderLegend(statuses);
-    renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap);
+    renderLegend(statuses, glossary);
+    renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary);
 
   } catch (e) {
     document.getElementById('matrix-body').innerHTML = `<div class="error">Could not load data. Make sure the Google Sheet is publicly readable (Share → Anyone with the link → Viewer).<br><br>Error: ${e.message}</div>`;
