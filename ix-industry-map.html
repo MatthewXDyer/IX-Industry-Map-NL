@@ -3,52 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="1.6.0">
+<meta name="version" content="1.7.0">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  @font-face {
+    font-family: 'GT America Medium';
+    src: url('https://www.ciiic.nl/_nuxt/GT-America-Extended-Medium.BqJJQ_OL.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    /* CIIIC-inspired tokens (from ciiic.nl design system) */
-    --ciiic-darkest: #141513;
-    --ciiic-lightest: #ffffff;
-    --ciiic-primary: #e2fe52;
-    --ciiic-primary-light: #f0fbba;
-    --ciiic-primary-dark: #a3c400;
-    --ciiic-secondary: #39766d;
-    --ciiic-gray-100: #f4f5f9;
-    --ciiic-gray-300: #e3e3e3;
-    --ciiic-gray-600: #727272;
-    --ciiic-gray-900: #4a4a49;
-    --ciiic-success: #009623;
-    --ciiic-info: #a79cf0;
-    --ciiic-warning: #ffc631;
-
-    --blue-50: #E6F1FB; --blue-800: #0C447C;
-    --green-50: #EAF3DE; --green-800: #27500A;
-    --amber-50: #FAEEDA; --amber-800: #633806;
-    --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-600: #5F5E5A;
-    --green-600: var(--ciiic-success);
-    --border: rgba(20, 21, 19, 0.1);
-    --bg: var(--ciiic-lightest);
-    --bg-secondary: var(--ciiic-gray-100);
-    --text: var(--ciiic-darkest);
-    --text-muted: var(--ciiic-gray-900);
-    --radius: 1rem;
-    --radius-sm: 0.5rem;
-    --shadow-light: 0 0 8px rgba(0, 0, 0, 0.06);
-    --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --ciiic-lime: #C8E641;
+    --ciiic-black: #000000;
+    --text-primary: #FFFFFF;
+    --text-muted: #AAAAAA;
+    --border-subtle: rgba(255, 255, 255, 0.1);
+    --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+    --font-heading: 'GT America Medium', 'Inter', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     --vertical-count: 3;
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
-    color: var(--text);
-    background: var(--bg-secondary);
+    color: var(--text-primary);
+    background: var(--ciiic-black);
     min-height: 100vh;
     padding: 2.5rem 1rem 3rem;
     -webkit-font-smoothing: antialiased;
@@ -65,24 +53,26 @@
 
   header {
     margin-bottom: 2.5rem;
-    padding-bottom: 2rem;
     text-align: center;
   }
 
   header h1 {
+    font-family: var(--font-heading);
     font-size: clamp(1.75rem, 4vw, 2.75rem);
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     line-height: 1.1;
+    color: var(--text-primary);
     max-width: 48rem;
     margin: 0 auto;
   }
 
   header .subheader {
+    font-family: var(--font-body);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--ciiic-secondary);
+    color: var(--text-primary);
     margin-top: 0.75rem;
     letter-spacing: 0.01em;
     max-width: 40rem;
@@ -92,8 +82,9 @@
   header .subheader:empty { display: none; }
 
   header .intro {
+    font-family: var(--font-body);
     font-size: 0.9375rem;
-    color: var(--text-muted);
+    color: var(--text-primary);
     margin-top: 0.625rem;
     line-height: 1.6;
     max-width: 39rem;
@@ -113,39 +104,39 @@
   }
 
   .badge {
+    font-family: var(--font-body);
     font-size: 0.6875rem;
     font-weight: 500;
     padding: 0.35rem 0.75rem;
     border-radius: 9999px;
-    border: none;
-    color: var(--ciiic-gray-900);
-    background: var(--ciiic-lightest);
-    box-shadow: var(--shadow-light);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .matrix {
-    background: var(--bg);
-    border: none;
+    background: var(--ciiic-black);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: var(--shadow-card);
   }
 
-  .layer-block { border-bottom: 1px solid var(--ciiic-gray-300); }
+  .layer-block { border-bottom: 1px solid var(--border-subtle); }
   .layer-block:last-child { border-bottom: none; }
 
   .layer-band {
     padding: 0.875rem 1.25rem;
+    font-family: var(--font-heading);
     font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-left: 4px solid var(--ciiic-primary);
   }
 
   .matrix-row {
@@ -155,14 +146,15 @@
 
   .col-head {
     padding: 0.875rem 1rem;
+    font-family: var(--font-heading);
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: 500;
     text-align: center;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #ffffff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    border-right: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,18 +162,21 @@
   }
   .col-head:last-child { border-right: none; }
 
-  .col-head .tip-icon {
-    border-color: rgba(255, 255, 255, 0.55);
-    color: rgba(255, 255, 255, 0.92);
+  .col-head .tip-icon,
+  .layer-band .tip-icon {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.85);
   }
 
-  .cell { padding: 0.875rem 1rem; border-right: 1px solid rgba(20, 21, 19, 0.08); min-height: 52px; }
+  .cell {
+    padding: 0.875rem 1rem;
+    border-right: 1px solid var(--border-subtle);
+    min-height: 52px;
+    color: var(--text-primary);
+  }
   .cell:last-child { border-right: none; }
 
-  .glossary-tip {
-    cursor: help;
-    position: relative;
-  }
+  .glossary-tip { cursor: help; position: relative; }
 
   .tip-icon {
     display: inline-flex;
@@ -190,6 +185,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
+    font-family: var(--font-body);
     font-size: 9px;
     font-weight: 700;
     line-height: 1;
@@ -198,79 +194,104 @@
     border: 1px solid currentColor;
   }
 
-  .layer-band .tip-icon {
-    border-color: rgba(255,255,255,0.55);
-    color: rgba(255,255,255,0.9);
-  }
-
   .glossary-popover {
     position: fixed;
     z-index: 1000;
     max-width: 300px;
     padding: 1rem 1.125rem;
-    background: var(--bg);
-    border: none;
+    background: #141414;
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
     pointer-events: none;
-    border-top: 3px solid var(--ciiic-primary);
+    border-top: 3px solid var(--ciiic-lime);
   }
 
   .glossary-popover-title {
+    font-family: var(--font-heading);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
-    color: var(--text);
+    letter-spacing: 0.08em;
+    color: var(--text-primary);
     margin-bottom: 6px;
   }
 
   .glossary-popover-body {
+    font-family: var(--font-body);
     font-size: 12px;
     line-height: 1.5;
     color: var(--text-muted);
   }
 
-  .glossary-popover-desc {
-    margin-bottom: 0.75rem;
-  }
+  .glossary-popover-desc { margin-bottom: 0.75rem; color: var(--text-muted); }
 
   .glossary-popover-meta {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     font-size: 11px;
+    color: var(--text-muted);
   }
 
   .glossary-popover-meta strong {
-    color: var(--text);
+    color: var(--text-primary);
     font-weight: 600;
   }
 
-  .entry { display: flex; align-items: flex-start; gap: 7px; padding: 6px 4px; border-bottom: 1px solid rgba(20, 21, 19, 0.06); cursor: pointer; border-radius: var(--radius-sm); transition: background 0.15s ease; }
+  .entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+  }
   .entry:last-child { border-bottom: none; }
-  .entry:hover { background: rgba(255, 255, 255, 0.35); }
+  .entry:hover { background: rgba(255, 255, 255, 0.06); }
 
-  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; background: var(--gray-200); }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+    background: var(--ciiic-lime);
+  }
 
   .entry-text { flex: 1; }
-  .entry-name { font-size: 0.8125rem; line-height: 1.45; color: var(--text); font-weight: 500; }
+  .entry-name {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
   .entry-count {
+    font-family: var(--font-body);
     font-size: 0.625rem;
     font-weight: 500;
-    color: var(--ciiic-gray-900);
-    background: rgba(255, 255, 255, 0.7);
+    color: var(--text-muted);
+    background: transparent;
     border: none;
-    padding: 2px 8px;
-    border-radius: 9999px;
+    padding: 2px 0;
+    border-radius: 0;
     white-space: nowrap;
     margin-top: 4px;
     display: inline-block;
-    box-shadow: var(--shadow-light);
   }
 
   .loading { padding: 3rem; text-align: center; font-size: 13px; color: var(--text-muted); }
-  .error { padding: 2rem; font-size: 13px; color: #A32D2D; background: #FCEBEB; border-radius: var(--radius); }
+  .error {
+    padding: 2rem;
+    font-size: 13px;
+    color: #ff9999;
+    background: rgba(163, 45, 45, 0.15);
+    border-radius: var(--radius);
+    border: 1px solid rgba(163, 45, 45, 0.3);
+  }
 
   footer {
     margin-top: 2rem;
@@ -281,9 +302,22 @@
     text-align: center;
   }
   .legend { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.6875rem; font-weight: 500; color: var(--text-muted); cursor: help; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: help;
+  }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .footer-note { font-size: 0.6875rem; color: var(--ciiic-gray-600); }
+  .footer-note {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
 </style>
 </head>
 <body>
@@ -318,31 +352,33 @@
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
 
 const VERTICAL_PALETTE = [
-  { header: '#1a4540', accent: '#39766d' },
-  { header: '#3f4a12', accent: '#7b9108' },
-  { header: '#352a58', accent: '#6b52c4' },
-  { header: '#1e3a36', accent: '#2d6a4f' },
-  { header: '#4a1f2e', accent: '#9f1239' },
-  { header: '#123836', accent: '#115e59' }
+  {
+    subheader: '#3D6B55',
+    cells: ['#2C4A3E', '#1E3329', '#121F18']
+  },
+  {
+    subheader: '#6B6B1A',
+    cells: ['#4A4A1A', '#333310', '#1F1F08']
+  },
+  {
+    subheader: '#3D2B5C',
+    cells: ['#2A1F3D', '#1C1428', '#0F0B15']
+  }
 ];
 
-const LAYER_BAND_PALETTE = [
-  { bg: '#141513', color: '#ffffff' },
-  { bg: '#39766d', color: '#ffffff' },
-  { bg: '#2a2f28', color: '#ffffff' },
-  { bg: '#1e3a36', color: '#ffffff' },
-  { bg: '#3d2b32', color: '#ffffff' },
-  { bg: '#1a2e2c', color: '#ffffff' }
-];
+const LAYER_BAND_COLORS = ['#1A2B22', '#141E1A', '#0D1210'];
 
-const LAYER_CELL_LIGHTNESS = [86, 79, 72];
+const CIIIC_LIME = '#C8E641';
 
-const STATUS_DOT_COLORS = [
-  'var(--gray-200)',
-  'var(--green-600)',
-  'var(--gray-100)',
-  'var(--gray-600)'
-];
+function verticalTheme(verticalIndex, layerIndex) {
+  const vertical = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
+  const cellBg = vertical.cells[layerIndex] ?? vertical.cells[vertical.cells.length - 1];
+  return {
+    headerBg: vertical.subheader,
+    headerColor: '#FFFFFF',
+    cellBg
+  };
+}
 
 async function fetchSheet(tabName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
@@ -365,60 +401,6 @@ async function fetchSheet(tabName) {
     r.c.forEach((cell, i) => { if (cols[i]) obj[cols[i]] = cell ? cell.v : null; });
     return obj;
   });
-}
-
-function hexToHsl(hex) {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const r = ((n >> 16) & 255) / 255;
-  const g = ((n >> 8) & 255) / 255;
-  const b = (n & 255) / 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  if (max === min) return { h: 0, s: 0, l: l * 100 };
-  const d = max - min;
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-  let h;
-  switch (max) {
-    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-    case g: h = ((b - r) / d + 2) / 6; break;
-    default: h = ((r - g) / d + 4) / 6;
-  }
-  return { h: h * 360, s: s * 100, l: l * 100 };
-}
-
-function hslToHex(h, s, l) {
-  s /= 100;
-  l /= 100;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-  const m = l - c / 2;
-  let r, g, b;
-  if (h < 60) [r, g, b] = [c, x, 0];
-  else if (h < 120) [r, g, b] = [x, c, 0];
-  else if (h < 180) [r, g, b] = [0, c, x];
-  else if (h < 240) [r, g, b] = [0, x, c];
-  else if (h < 300) [r, g, b] = [x, 0, c];
-  else [r, g, b] = [c, 0, x];
-  const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-function layerCellLightness(layerIndex, layerCount) {
-  if (layerCount <= 1) return LAYER_CELL_LIGHTNESS[0];
-  if (layerIndex < LAYER_CELL_LIGHTNESS.length) return LAYER_CELL_LIGHTNESS[layerIndex];
-  const step = (LAYER_CELL_LIGHTNESS[0] - LAYER_CELL_LIGHTNESS[LAYER_CELL_LIGHTNESS.length - 1]) / (layerCount - 1);
-  return LAYER_CELL_LIGHTNESS[0] - step * layerIndex;
-}
-
-function verticalTheme(palette, layerIndex, layerCount) {
-  const { h, s } = hexToHsl(palette.accent);
-  const cellLightness = layerCellLightness(layerIndex, layerCount);
-  return {
-    headerBg: palette.header,
-    headerColor: '#ffffff',
-    cellBg: hslToHex(h, Math.max(s, 32), cellLightness)
-  };
 }
 
 function parseGlossary(rows) {
@@ -613,13 +595,13 @@ function verticalGlossaryKeys(vertical) {
   return [`${vertical.name} vertical`, vertical.name, 'Vertical'];
 }
 
-function statusDotColor(statusLabel, index) {
+function statusDotColor(statusLabel) {
   const label = (statusLabel || '').toLowerCase();
-  if (label.includes('validated')) return 'var(--ciiic-success)';
-  if (label.includes('only international')) return 'var(--ciiic-gray-600)';
-  if (label.includes('not active')) return 'var(--gray-100)';
-  if (label.includes('under review') || label.includes('review')) return 'var(--ciiic-warning)';
-  return STATUS_DOT_COLORS[index % STATUS_DOT_COLORS.length];
+  if (label.includes('validated')) return CIIIC_LIME;
+  if (label.includes('under review') || label.includes('review')) return '#888888';
+  if (label.includes('not active')) return '#666666';
+  if (label.includes('only international')) return '#555555';
+  return '#888888';
 }
 
 function renderFooterNote(glossary) {
@@ -650,7 +632,7 @@ function renderLegend(statuses, glossary) {
 
     const dot = document.createElement('div');
     dot.className = 'legend-dot';
-    dot.style.background = statusDotColor(status.label, index);
+    dot.style.background = statusDotColor(status.label);
 
     const label = document.createElement('span');
     label.textContent = status.label;
@@ -670,11 +652,10 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     const block = document.createElement('div');
     block.className = 'layer-block';
 
-    const bandPalette = LAYER_BAND_PALETTE[layerIndex % LAYER_BAND_PALETTE.length];
     const band = document.createElement('div');
     band.className = 'layer-band';
-    band.style.background = bandPalette.bg;
-    band.style.color = bandPalette.color;
+    band.style.background = LAYER_BAND_COLORS[layerIndex] ?? LAYER_BAND_COLORS[LAYER_BAND_COLORS.length - 1];
+    band.style.color = '#FFFFFF';
     band.appendChild(document.createTextNode(layer.name));
     attachGlossaryTip(band, glossary, layerGlossaryKeys(layer), layer.description, true);
     block.appendChild(band);
@@ -683,8 +664,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     headRow.className = 'matrix-row';
 
     verticals.forEach((vertical, verticalIndex) => {
-      const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
-      const theme = verticalTheme(palette, layerIndex, layers.length);
+      const theme = verticalTheme(verticalIndex, layerIndex);
       const col = document.createElement('div');
       col.className = 'col-head';
       col.style.background = theme.headerBg;
@@ -701,16 +681,12 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     verticals.forEach((vertical, verticalIndex) => {
       const cell = document.createElement('div');
       cell.className = 'cell';
-      const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
-      const theme = verticalTheme(palette, layerIndex, layers.length);
+      const theme = verticalTheme(verticalIndex, layerIndex);
       cell.style.background = theme.cellBg;
 
       const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
 
       cellEntries.forEach(entry => {
-        const statusId = entry['Validation Status'];
-        const statusLabel = statusMap[statusId] || '';
-        const statusIndex = statusIndexById[statusId] ?? 0;
         const count = orgCountMap[entry['Entry_ID']] || 0;
 
         const el = document.createElement('div');
@@ -718,7 +694,6 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
 
         const dot = document.createElement('div');
         dot.className = 'dot';
-        dot.style.background = statusDotColor(statusLabel, statusIndex);
 
         const text = document.createElement('div');
         text.className = 'entry-text';
@@ -741,7 +716,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
       });
 
       if (cellEntries.length === 0) {
-        cell.innerHTML = '<span style="font-size:11px;color:var(--gray-200);">—</span>';
+        cell.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.2);">—</span>';
       }
 
       contentRow.appendChild(cell);
