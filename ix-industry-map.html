@@ -39,7 +39,10 @@
 
   header { margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 0.5px solid var(--border); }
   header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; }
-  header p { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+  header .subheader { font-size: 15px; font-weight: 500; color: var(--text); margin-top: 6px; letter-spacing: -0.2px; }
+  header .subheader:empty { display: none; }
+  header .intro { font-size: 13px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+  header .intro:empty { display: none; }
   .header-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap; }
   .badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text-muted); background: var(--bg); }
 
@@ -84,14 +87,13 @@
 
   .entry { display: flex; align-items: flex-start; gap: 7px; padding: 5px 3px; border-bottom: 0.5px solid rgba(0,0,0,0.06); cursor: pointer; border-radius: 4px; transition: background 0.1s; }
   .entry:last-child { border-bottom: none; }
-  .entry:hover { background: var(--bg-secondary); }
+  .entry:hover { background: rgba(255,255,255,0.45); }
 
   .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; background: var(--gray-200); }
 
   .entry-text { flex: 1; }
   .entry-name { font-size: 11.5px; line-height: 1.4; color: var(--text); }
-  .entry-name.multi { color: var(--text-muted); font-style: italic; }
-  .entry-count { font-size: 10px; color: var(--text-muted); background: var(--bg-secondary); border: 0.5px solid var(--border); padding: 1px 6px; border-radius: 10px; white-space: nowrap; margin-top: 3px; display: inline-block; }
+  .entry-count { font-size: 10px; color: var(--text-muted); background: rgba(255,255,255,0.55); border: 0.5px solid var(--border); padding: 1px 6px; border-radius: 10px; white-space: nowrap; margin-top: 3px; display: inline-block; }
 
   .loading { padding: 3rem; text-align: center; font-size: 13px; color: var(--text-muted); }
   .error { padding: 2rem; font-size: 13px; color: #A32D2D; background: #FCEBEB; border-radius: var(--radius); }
@@ -107,8 +109,9 @@
 <div class="page">
 
   <header>
-    <h1>Dutch IX industry map</h1>
-    <p>Immersive Experience sector in the Netherlands — organisations mapped by layer and entry type</p>
+    <h1 id="page-header">Loading…</h1>
+    <p class="subheader" id="page-subheader"></p>
+    <p class="intro" id="page-intro"></p>
     <div class="header-meta">
       <span class="badge" id="layer-count-badge">Loading…</span>
       <span class="badge" id="vertical-count-badge"></span>
@@ -136,13 +139,15 @@
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
 
 const VERTICAL_PALETTE = [
-  { bg: 'var(--blue-50)', color: 'var(--blue-800)' },
-  { bg: 'var(--green-50)', color: 'var(--green-800)' },
-  { bg: 'var(--amber-50)', color: 'var(--amber-800)' },
-  { bg: 'var(--purple-50)', color: 'var(--purple-800)' },
-  { bg: 'var(--rose-50)', color: 'var(--rose-800)' },
-  { bg: 'var(--teal-50)', color: 'var(--teal-800)' }
+  { accent: '#0C447C' },
+  { accent: '#27500A' },
+  { accent: '#633806' },
+  { accent: '#5B21B6' },
+  { accent: '#9F1239' },
+  { accent: '#115E59' }
 ];
+
+const LAYER_CELL_LIGHTNESS = [97.5, 94.5, 91.5];
 
 const STATUS_DOT_COLORS = [
   'var(--gray-200)',
@@ -174,6 +179,79 @@ async function fetchSheet(tabName) {
   });
 }
 
+function hexToHsl(hex) {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l: l * 100 };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h;
+  switch (max) {
+    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+    case g: h = ((b - r) / d + 2) / 6; break;
+    default: h = ((r - g) / d + 4) / 6;
+  }
+  return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
+function hslToHex(h, s, l) {
+  s /= 100;
+  l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function layerCellLightness(layerIndex, layerCount) {
+  if (layerCount <= 1) return LAYER_CELL_LIGHTNESS[0];
+  if (layerIndex < LAYER_CELL_LIGHTNESS.length) return LAYER_CELL_LIGHTNESS[layerIndex];
+  const step = (LAYER_CELL_LIGHTNESS[0] - LAYER_CELL_LIGHTNESS[LAYER_CELL_LIGHTNESS.length - 1]) / (layerCount - 1);
+  return LAYER_CELL_LIGHTNESS[0] - step * layerIndex;
+}
+
+function verticalTheme(accentHex, layerIndex, layerCount) {
+  const { h } = hexToHsl(accentHex);
+  const cellLightness = layerCellLightness(layerIndex, layerCount);
+  return {
+    headerBg: hslToHex(h, 44, 93),
+    headerColor: accentHex,
+    cellBg: hslToHex(h, 30, cellLightness)
+  };
+}
+
+function parseGlossary(rows) {
+  const map = {};
+  rows.forEach(row => {
+    if (row['Term']) map[row['Term']] = row['Description'] || '';
+  });
+  return map;
+}
+
+function applyPageCopy(glossary) {
+  const header = glossary['Header'] || 'Dutch IX industry map';
+  const subheader = glossary['Subheader'] || '';
+  const intro = glossary['Intro'] || '';
+
+  document.title = header;
+  document.getElementById('page-header').textContent = header;
+  document.getElementById('page-subheader').textContent = subheader;
+  document.getElementById('page-intro').textContent = intro;
+}
+
 function statusDotColor(statusLabel, index) {
   const label = (statusLabel || '').toLowerCase();
   if (label.includes('validated')) return 'var(--green-600)';
@@ -189,12 +267,13 @@ function renderMatrixHead(verticals) {
 
   verticals.forEach((vertical, index) => {
     const palette = VERTICAL_PALETTE[index % VERTICAL_PALETTE.length];
+    const theme = verticalTheme(palette.accent, 0, 1);
     const col = document.createElement('div');
     col.className = 'col-head';
     col.textContent = vertical.name;
     col.title = vertical.description || '';
-    col.style.background = palette.bg;
-    col.style.color = palette.color;
+    col.style.background = theme.headerBg;
+    col.style.color = theme.headerColor;
     head.appendChild(col);
   });
 }
@@ -225,7 +304,7 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
   const body = document.getElementById('matrix-body');
   body.innerHTML = '';
 
-  layers.forEach(layer => {
+  layers.forEach((layer, layerIndex) => {
     const row = document.createElement('div');
     row.className = 'matrix-row';
 
@@ -235,9 +314,12 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
     rowHead.title = layer.description || '';
     row.appendChild(rowHead);
 
-    verticals.forEach(vertical => {
+    verticals.forEach((vertical, verticalIndex) => {
       const cell = document.createElement('div');
       cell.className = 'cell';
+      const palette = VERTICAL_PALETTE[verticalIndex % VERTICAL_PALETTE.length];
+      const theme = verticalTheme(palette.accent, layerIndex, layers.length);
+      cell.style.background = theme.cellBg;
 
       const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
 
@@ -246,7 +328,6 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         const statusLabel = statusMap[statusId] || '';
         const statusIndex = statusIndexById[statusId] ?? 0;
         const count = orgCountMap[entry['Entry_ID']] || 0;
-        const isMulti = entry['Entry'] && entry['Entry'].includes('*');
 
         const el = document.createElement('div');
         el.className = 'entry';
@@ -260,12 +341,12 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
         text.className = 'entry-text';
 
         const name = document.createElement('div');
-        name.className = 'entry-name' + (isMulti ? ' multi' : '');
+        name.className = 'entry-name';
         name.textContent = entry['Entry'] || '';
 
         const countBadge = document.createElement('div');
         countBadge.className = 'entry-count';
-        countBadge.textContent = count === 0 ? '0 orgs' : `${count} org${count > 1 ? 's' : ''}`;
+        countBadge.textContent = count === 0 ? '0 records' : `${count} record${count > 1 ? 's' : ''}`;
 
         text.appendChild(name);
         text.appendChild(countBadge);
@@ -287,13 +368,16 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
 
 async function init() {
   try {
-    const [layersRaw, verticalsRaw, entries, orgEntries, statusesRaw] = await Promise.all([
+    const [layersRaw, verticalsRaw, entries, orgEntries, statusesRaw, glossaryRaw] = await Promise.all([
       fetchSheet('Layers'),
       fetchSheet('Verticals'),
       fetchSheet('Entries'),
       fetchSheet('Org_Entries'),
-      fetchSheet('ReviewStatuses')
+      fetchSheet('ReviewStatuses'),
+      fetchSheet('Glossary')
     ]);
+
+    applyPageCopy(parseGlossary(glossaryRaw));
 
     const layers = layersRaw
       .filter(row => row['Layer_ID'])
