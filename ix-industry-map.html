@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.13">
+<meta name="version" content="0.1.14">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -467,6 +467,11 @@ function verticalTheme(verticalIndex, layerIndex) {
   };
 }
 
+function extractColName(label) {
+  if (label == null || label === '') return '';
+  return String(label).trim().split(/\s+/)[0];
+}
+
 async function fetchSheet(tabName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
   const res = await fetch(url);
@@ -475,9 +480,10 @@ async function fetchSheet(tabName) {
   const json = JSON.parse(text.substring(47).slice(0, -2));
   const rawRows = json.table.rows.filter(r => r.c && r.c.some(cell => cell && cell.v !== null));
 
-  let cols = json.table.cols.map(c => c.label);
+  let cols = json.table.cols.map(c => extractColName(c.label));
   let dataRows = rawRows;
 
+  // Header row embedded as first row when gviz returns empty col labels
   if (cols.every(label => !label) && rawRows.length > 0) {
     cols = rawRows[0].c.map(cell => (cell && cell.v != null) ? String(cell.v) : '');
     dataRows = rawRows.slice(1);
