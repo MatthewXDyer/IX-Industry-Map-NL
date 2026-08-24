@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.15">
+<meta name="version" content="0.1.16">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -216,6 +216,242 @@
     border-top: 3px solid var(--ciiic-lime);
   }
 
+  .glossary-popover--locked {
+    pointer-events: auto;
+    padding-top: 2.25rem;
+    padding-right: 2.25rem;
+  }
+
+  .glossary-popover-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .glossary-popover-close:hover {
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .glossary-popover--locked .glossary-popover-close {
+    display: inline-flex;
+  }
+
+  .glossary-popover-footer {
+    display: none;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .glossary-popover--locked .glossary-popover-footer {
+    display: block;
+  }
+
+  .see-entries-btn {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--ciiic-lime);
+    color: #000000;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .see-entries-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  .see-entries-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .entry.entry-selected {
+    background: rgba(200, 230, 65, 0.1);
+    outline: 1px solid rgba(200, 230, 65, 0.45);
+  }
+
+  .entry { cursor: pointer; }
+
+  .org-panel-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .org-panel-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .org-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1200;
+    width: min(26rem, 100vw);
+    height: 100vh;
+    background: #0a0a0a;
+    border-left: 1px solid var(--border-subtle);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.45);
+  }
+
+  .org-panel.is-open {
+    transform: translateX(0);
+  }
+
+  .org-panel-header {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .org-panel-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .org-panel-title {
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.35;
+    color: var(--text-primary);
+  }
+
+  .org-panel-close {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .org-panel-close:hover {
+    color: var(--text-primary);
+  }
+
+  .org-panel-meta {
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .org-panel-search {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .org-panel-search input {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: #141414;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+  }
+
+  .org-panel-search input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .org-panel-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 0.5rem 0;
+  }
+
+  .org-panel-empty {
+    padding: 2rem 1.25rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  .org-row {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .org-row:last-child { border-bottom: none; }
+
+  .org-row-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
+  .org-row-meta {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+
+  .org-row-desc {
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .org-row-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--ciiic-lime);
+    text-decoration: none;
+  }
+
+  .org-row-link:hover {
+    text-decoration: underline;
+  }
+
   .glossary-popover-title {
     font-family: var(--font-heading);
     font-size: 11px;
@@ -399,6 +635,10 @@
 
     .glossary-popover {
       max-width: min(300px, calc(100vw - 1.5rem));
+    }
+
+    .org-panel {
+      width: 100vw;
     }
 
     .page-meta { gap: 0.5rem; }
@@ -592,6 +832,45 @@ function buildOrgCountMap(organizations) {
   return orgCountMap;
 }
 
+function normalizeOrganization(org) {
+  const focusParts = ['Focus 1', 'Focus 2', 'Focus 3']
+    .map(key => org[key])
+    .filter(Boolean)
+    .map(value => String(value));
+
+  return {
+    id: org['Organization_ID'],
+    name: org['Name'] ? String(org['Name']) : '',
+    website: org['Website'] ? String(org['Website']) : '',
+    description: org['Description'] ? String(org['Description']) : '',
+    city: org['City'] ? String(org['City']) : '',
+    focus: focusParts.join(' · ')
+  };
+}
+
+function buildOrgsByCategory(organizations) {
+  const map = {};
+  organizations
+    .filter(org => org['IX'] === 'Active')
+    .forEach(org => {
+      const normalized = normalizeOrganization(org);
+      ['Category_ID', 'Category_ID (2)'].forEach(key => {
+        const categoryId = org[key];
+        if (!categoryId) return;
+        if (!map[categoryId]) map[categoryId] = [];
+        if (!map[categoryId].some(item => item.id === normalized.id)) {
+          map[categoryId].push(normalized);
+        }
+      });
+    });
+
+  Object.values(map).forEach(list => {
+    list.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+  });
+
+  return map;
+}
+
 function parseGlossary(rows) {
   const map = {};
   rows.forEach(row => {
@@ -621,9 +900,15 @@ function applyPageCopy(glossary) {
   }
 }
 
+let orgsByCategory = {};
 let glossaryPopover = null;
 let glossaryHideTimer = null;
 let glossaryPinned = false;
+let entryPopoverLocked = false;
+let lockedEntryEl = null;
+let activeEntryContext = null;
+let orgPanelBackdrop = null;
+let orgPanel = null;
 
 function initGlossaryPopover() {
   if (glossaryPopover) return;
@@ -631,20 +916,198 @@ function initGlossaryPopover() {
   glossaryPopover.id = 'glossary-popover';
   glossaryPopover.className = 'glossary-popover';
   glossaryPopover.hidden = true;
-  glossaryPopover.innerHTML = '<div class="glossary-popover-title"></div><div class="glossary-popover-body"></div>';
+  glossaryPopover.innerHTML = `
+    <button type="button" class="glossary-popover-close" aria-label="Close">×</button>
+    <div class="glossary-popover-title"></div>
+    <div class="glossary-popover-body"></div>
+    <div class="glossary-popover-footer">
+      <button type="button" class="see-entries-btn">See entries</button>
+    </div>
+  `;
   document.body.appendChild(glossaryPopover);
 
   glossaryPopover.addEventListener('mouseenter', () => clearTimeout(glossaryHideTimer));
   glossaryPopover.addEventListener('mouseleave', () => {
-    if (!glossaryPinned) hideGlossaryPopover();
+    if (!glossaryPinned && !entryPopoverLocked) hideGlossaryPopover();
+  });
+
+  glossaryPopover.querySelector('.glossary-popover-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    unlockEntryPopover();
+  });
+
+  glossaryPopover.querySelector('.see-entries-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!activeEntryContext) return;
+    openOrgPanel({
+      ...activeEntryContext,
+      orgs: orgsByCategory[activeEntryContext.category.id] || []
+    });
   });
 
   document.addEventListener('click', (e) => {
-    if (glossaryPinned && !e.target.closest('.glossary-tip') && !e.target.closest('.glossary-popover')) {
+    if (entryPopoverLocked &&
+        !e.target.closest('.entry') &&
+        !e.target.closest('.glossary-popover') &&
+        !e.target.closest('.org-panel') &&
+        !e.target.closest('.org-panel-backdrop')) {
+      unlockEntryPopover();
+    }
+
+    if (glossaryPinned &&
+        !e.target.closest('.glossary-tip:not(.entry)') &&
+        !e.target.closest('.glossary-popover')) {
       glossaryPinned = false;
       hideGlossaryPopover();
     }
   });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (orgPanel?.classList.contains('is-open')) closeOrgPanel();
+      else if (entryPopoverLocked) unlockEntryPopover();
+      else if (glossaryPinned) {
+        glossaryPinned = false;
+        hideGlossaryPopover();
+      }
+    }
+  });
+}
+
+function initOrgPanel() {
+  if (orgPanel) return;
+
+  orgPanelBackdrop = document.createElement('div');
+  orgPanelBackdrop.className = 'org-panel-backdrop';
+  orgPanelBackdrop.addEventListener('click', closeOrgPanel);
+
+  orgPanel = document.createElement('aside');
+  orgPanel.className = 'org-panel';
+  orgPanel.setAttribute('aria-hidden', 'true');
+  orgPanel.innerHTML = `
+    <div class="org-panel-header">
+      <div class="org-panel-header-top">
+        <h2 class="org-panel-title"></h2>
+        <button type="button" class="org-panel-close" aria-label="Close">×</button>
+      </div>
+      <div class="org-panel-meta"></div>
+    </div>
+    <div class="org-panel-search">
+      <input type="search" placeholder="Search organisations…" aria-label="Search organisations">
+    </div>
+    <div class="org-panel-list"></div>
+  `;
+
+  orgPanel.querySelector('.org-panel-close').addEventListener('click', closeOrgPanel);
+  orgPanel.querySelector('.org-panel-search input').addEventListener('input', (e) => {
+    filterOrgPanelList(e.target.value);
+  });
+
+  document.body.appendChild(orgPanelBackdrop);
+  document.body.appendChild(orgPanel);
+}
+
+let orgPanelItems = [];
+
+function formatWebsite(url) {
+  return String(url).replace(/^https?:\/\//i, '').replace(/\/$/, '');
+}
+
+function renderOrgPanelList(items) {
+  const list = orgPanel.querySelector('.org-panel-list');
+  list.innerHTML = '';
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="org-panel-empty">No active organisations in this category.</div>';
+    return;
+  }
+
+  items.forEach(org => {
+    const row = document.createElement('article');
+    row.className = 'org-row';
+
+    const name = document.createElement('div');
+    name.className = 'org-row-name';
+    name.textContent = org.name || 'Unnamed organisation';
+    row.appendChild(name);
+
+    const metaParts = [org.city, org.focus].filter(Boolean);
+    if (metaParts.length > 0) {
+      const meta = document.createElement('div');
+      meta.className = 'org-row-meta';
+      meta.textContent = metaParts.join(' · ');
+      row.appendChild(meta);
+    }
+
+    if (org.description) {
+      const desc = document.createElement('div');
+      desc.className = 'org-row-desc';
+      desc.textContent = org.description;
+      row.appendChild(desc);
+    }
+
+    if (org.website) {
+      const link = document.createElement('a');
+      link.className = 'org-row-link';
+      link.href = org.website.startsWith('http') ? org.website : `https://${org.website}`;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = formatWebsite(org.website);
+      row.appendChild(link);
+    }
+
+    list.appendChild(row);
+  });
+}
+
+function filterOrgPanelList(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    renderOrgPanelList(orgPanelItems);
+    return;
+  }
+
+  const filtered = orgPanelItems.filter(org => {
+    const haystack = [org.name, org.city, org.focus, org.description, org.website]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(q);
+  });
+
+  renderOrgPanelList(filtered);
+}
+
+function openOrgPanel(context) {
+  initOrgPanel();
+  unlockEntryPopover();
+
+  const { category, layer, vertical, count, orgs } = context;
+  orgPanelItems = orgs || [];
+
+  orgPanel.querySelector('.org-panel-title').textContent = (category.name || '').replace(/\*+$/, '').trim();
+  orgPanel.querySelector('.org-panel-meta').textContent =
+    `${layer.name} · ${vertical.name} · ${formatRecordCount(count)}`;
+
+  const searchInput = orgPanel.querySelector('.org-panel-search input');
+  searchInput.value = '';
+  orgPanel.querySelector('.org-panel-search').hidden = orgPanelItems.length <= 8;
+
+  renderOrgPanelList(orgPanelItems);
+
+  orgPanelBackdrop.classList.add('is-open');
+  orgPanel.classList.add('is-open');
+  orgPanel.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  searchInput.focus();
+}
+
+function closeOrgPanel() {
+  if (!orgPanel) return;
+  orgPanelBackdrop.classList.remove('is-open');
+  orgPanel.classList.remove('is-open');
+  orgPanel.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
 function resolveGlossaryText(glossary, keys, fallback) {
@@ -690,9 +1153,11 @@ function formatRecordCount(count) {
   return `${count} Record${count !== 1 ? 's' : ''}`;
 }
 
-function showEntryPopover(el, category, layer, vertical, count) {
+function showEntryPopover(el, category, layer, vertical, count, locked) {
   clearTimeout(glossaryHideTimer);
   initGlossaryPopover();
+
+  activeEntryContext = { category, layer, vertical, count, anchorEl: el };
 
   const title = (category.name || '').replace(/\*+$/, '').trim();
   glossaryPopover.querySelector('.glossary-popover-title').textContent = title;
@@ -724,18 +1189,48 @@ function showEntryPopover(el, category, layer, vertical, count) {
   meta.append(verticalLine, layerLine, recordsLine);
   body.appendChild(meta);
 
+  const seeEntriesBtn = glossaryPopover.querySelector('.see-entries-btn');
+  seeEntriesBtn.textContent = count === 0 ? 'No entries' : `See ${count} entr${count === 1 ? 'y' : 'ies'}`;
+  seeEntriesBtn.disabled = count === 0;
+
+  glossaryPopover.classList.toggle('glossary-popover--locked', locked);
   glossaryPopover.hidden = false;
   positionGlossaryPopover(el);
 }
 
+function unlockEntryPopover() {
+  entryPopoverLocked = false;
+  activeEntryContext = null;
+  if (lockedEntryEl) {
+    lockedEntryEl.classList.remove('entry-selected');
+    lockedEntryEl = null;
+  }
+  if (glossaryPopover) {
+    glossaryPopover.classList.remove('glossary-popover--locked');
+  }
+  hideGlossaryPopover();
+}
+
+function lockEntryPopover(el, category, layer, vertical, count) {
+  if (lockedEntryEl && lockedEntryEl !== el) {
+    lockedEntryEl.classList.remove('entry-selected');
+  }
+
+  entryPopoverLocked = true;
+  lockedEntryEl = el;
+  el.classList.add('entry-selected');
+  showEntryPopover(el, category, layer, vertical, count, true);
+}
+
 function hideGlossaryPopover() {
   clearTimeout(glossaryHideTimer);
+  if (entryPopoverLocked) return;
   if (glossaryPopover) glossaryPopover.hidden = true;
 }
 
 function scheduleHideGlossaryPopover() {
   clearTimeout(glossaryHideTimer);
-  if (!glossaryPinned) {
+  if (!glossaryPinned && !entryPopoverLocked) {
     glossaryHideTimer = setTimeout(hideGlossaryPopover, 120);
   }
 }
@@ -782,7 +1277,31 @@ function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
 }
 
 function attachEntryTip(el, category, layer, vertical, count) {
-  attachPopoverTip(el, () => showEntryPopover(el, category, layer, vertical, count));
+  el.classList.add('glossary-tip');
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'button');
+
+  const openPreview = () => {
+    if (entryPopoverLocked && lockedEntryEl === el) return;
+    showEntryPopover(el, category, layer, vertical, count, false);
+  };
+
+  const lock = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    lockEntryPopover(el, category, layer, vertical, count);
+  };
+
+  el.addEventListener('mouseenter', openPreview);
+  el.addEventListener('mouseleave', scheduleHideGlossaryPopover);
+  el.addEventListener('focus', openPreview);
+  el.addEventListener('blur', scheduleHideGlossaryPopover);
+  el.addEventListener('click', lock);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      lock(e);
+    }
+  });
 }
 
 function attachSheetTip(el, title, description, showIcon) {
@@ -916,6 +1435,7 @@ async function init() {
     initGlossaryPopover();
 
     const { layers, verticals, categories } = parseCategorySheet(categoryRaw);
+    orgsByCategory = buildOrgsByCategory(organizationsRaw);
     const orgCountMap = buildOrgCountMap(organizationsRaw);
 
     document.documentElement.style.setProperty('--vertical-count', verticals.length);
