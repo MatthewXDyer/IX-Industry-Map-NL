@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.14">
+<meta name="version" content="0.1.15">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -415,8 +415,6 @@
     <p class="intro" id="page-intro"></p>
   </header>
 
-  <div class="legend" id="legend"></div>
-
   <div class="matrix" id="matrix">
     <div id="matrix-body"><div class="loading">Loading data…</div></div>
   </div>
@@ -437,6 +435,21 @@
 
 <script>
 const SHEET_ID = '1yYDiayOy2ReCqcbBjUYTi9czT9pLElt5Kuks42WroE0';
+
+const MAIN_LAYER_IDS = ['LID001', 'LID002', 'LID003'];
+const VERTICAL_IDS = ['VID001', 'VID002', 'VID003'];
+
+const DEFAULT_LAYER_NAMES = {
+  LID001: 'Makers Layer',
+  LID002: 'Middle Layer',
+  LID003: 'Distribution & Delivery Layer'
+};
+
+const DEFAULT_VERTICAL_NAMES = {
+  VID001: 'Creative Business Services',
+  VID002: 'Media & Entertainment',
+  VID003: 'Arts'
+};
 
 const VERTICAL_PALETTE = [
   {
@@ -467,9 +480,13 @@ function verticalTheme(verticalIndex, layerIndex) {
   };
 }
 
-function extractColName(label) {
-  if (label == null || label === '') return '';
-  return String(label).trim().split(/\s+/)[0];
+function extractColName(label, index) {
+  if (label == null || label === '') return `_col${index}`;
+  const full = String(label).trim();
+  if (/^\S+\s+(LID\d|VID\d|V\dL\dE\d|E\d{3}|[0-9a-f]{6,})/i.test(full)) {
+    return full.split(/\s+/)[0];
+  }
+  return full;
 }
 
 async function fetchSheet(tabName) {
@@ -480,12 +497,15 @@ async function fetchSheet(tabName) {
   const json = JSON.parse(text.substring(47).slice(0, -2));
   const rawRows = json.table.rows.filter(r => r.c && r.c.some(cell => cell && cell.v !== null));
 
-  let cols = json.table.cols.map(c => extractColName(c.label));
+  let cols = json.table.cols.map((c, i) => extractColName(c.label, i));
   let dataRows = rawRows;
 
   // Header row embedded as first row when gviz returns empty col labels
-  if (cols.every(label => !label) && rawRows.length > 0) {
-    cols = rawRows[0].c.map(cell => (cell && cell.v != null) ? String(cell.v) : '');
+  if (cols.every(label => label.startsWith('_col')) && rawRows.length > 0) {
+    cols = rawRows[0].c.map((cell, i) => {
+      const value = (cell && cell.v != null) ? String(cell.v).trim() : '';
+      return value || `_col${i}`;
+    });
     dataRows = rawRows.slice(1);
   }
 
@@ -494,6 +514,82 @@ async function fetchSheet(tabName) {
     r.c.forEach((cell, i) => { if (cols[i]) obj[cols[i]] = cell ? cell.v : null; });
     return obj;
   });
+}
+
+function looksLikeId(value) {
+  return /^(LID|VID|V\dL\dE\d|E\d)/i.test(String(value));
+}
+
+function parseMarkerReferences(rows, markerKey, idPattern) {
+  const refs = {};
+  rows.forEach(row => {
+    const id = row[markerKey];
+    if (!id || !idPattern.test(String(id))) return;
+    const keys = Object.keys(row);
+    const idx = keys.indexOf(markerKey);
+    if (idx < 0) return;
+    const name = row[keys[idx + 1]];
+    const desc = row[keys[idx + 2]];
+    if (name == null || looksLikeId(name)) return;
+    if (!refs[String(id)]) {
+      refs[String(id)] = {
+        name: String(name),
+        description: desc != null ? String(desc) : ''
+      };
+    }
+  });
+  return refs;
+}
+
+function parseCategorySheet(rows) {
+  const layerRefs = parseMarkerReferences(rows, 'Layers (reference)', /^LID\d+$/);
+  const verticalRefs = parseMarkerReferences(rows, 'Verticals (reference)', /^VID\d+$/);
+
+  rows.forEach(row => {
+    if (row['Layer_ID'] && row['Layer_Name'] && !layerRefs[row['Layer_ID']]) {
+      layerRefs[row['Layer_ID']] = { name: String(row['Layer_Name']), description: '' };
+    }
+    if (row['Vertical_ID'] && row['Vertical_Name'] && !verticalRefs[row['Vertical_ID']]) {
+      verticalRefs[row['Vertical_ID']] = { name: String(row['Vertical_Name']), description: '' };
+    }
+  });
+
+  const layers = MAIN_LAYER_IDS.map(id => ({
+    id,
+    name: layerRefs[id]?.name || DEFAULT_LAYER_NAMES[id] || id,
+    description: layerRefs[id]?.description || ''
+  }));
+
+  const verticals = VERTICAL_IDS.map(id => ({
+    id,
+    name: verticalRefs[id]?.name || DEFAULT_VERTICAL_NAMES[id] || id,
+    description: verticalRefs[id]?.description || ''
+  }));
+
+  const categories = rows
+    .filter(row => row['Category_ID'] && MAIN_LAYER_IDS.includes(row['Layer_ID']))
+    .map(row => ({
+      id: row['Category_ID'],
+      layerId: row['Layer_ID'],
+      verticalId: row['Vertical_ID'],
+      name: row['Entry'] || '',
+      description: row['Description'] || ''
+    }));
+
+  return { layers, verticals, categories };
+}
+
+function buildOrgCountMap(organizations) {
+  const orgCountMap = {};
+  organizations
+    .filter(org => org['IX'] === 'Active')
+    .forEach(org => {
+      ['Category_ID', 'Category_ID (2)'].forEach(key => {
+        const categoryId = org[key];
+        if (categoryId) orgCountMap[categoryId] = (orgCountMap[categoryId] || 0) + 1;
+      });
+    });
+  return orgCountMap;
 }
 
 function parseGlossary(rows) {
@@ -594,36 +690,20 @@ function formatRecordCount(count) {
   return `${count} Record${count !== 1 ? 's' : ''}`;
 }
 
-function showEntryPopover(el, entry, layer, vertical, count, statusLabel) {
+function showEntryPopover(el, category, layer, vertical, count) {
   clearTimeout(glossaryHideTimer);
   initGlossaryPopover();
 
-  const title = (entry['Entry'] || '').replace(/\*+$/, '').trim();
+  const title = (category.name || '').replace(/\*+$/, '').trim();
   glossaryPopover.querySelector('.glossary-popover-title').textContent = title;
 
   const body = glossaryPopover.querySelector('.glossary-popover-body');
   body.innerHTML = '';
 
-  if (statusLabel) {
-    const statusRow = document.createElement('div');
-    statusRow.className = 'glossary-popover-status';
-
-    const statusDot = document.createElement('span');
-    statusDot.className = 'glossary-popover-status-dot';
-    statusDot.style.background = statusDotColor(statusLabel);
-
-    const statusText = document.createElement('span');
-    statusText.textContent = statusLabel;
-
-    statusRow.append(statusDot, statusText);
-    body.appendChild(statusRow);
-  }
-
-  const description = entry['Description'] || '';
-  if (description) {
+  if (category.description) {
     const desc = document.createElement('p');
     desc.className = 'glossary-popover-desc';
-    desc.textContent = description;
+    desc.textContent = category.description;
     body.appendChild(desc);
   }
 
@@ -701,8 +781,8 @@ function attachGlossaryTip(el, glossary, keys, fallback, showIcon) {
   attachPopoverTip(el, () => showGlossaryPopover(el, resolved.term, resolved.text));
 }
 
-function attachEntryTip(el, entry, layer, vertical, count, statusLabel) {
-  attachPopoverTip(el, () => showEntryPopover(el, entry, layer, vertical, count, statusLabel));
+function attachEntryTip(el, category, layer, vertical, count) {
+  attachPopoverTip(el, () => showEntryPopover(el, category, layer, vertical, count));
 }
 
 function attachSheetTip(el, title, description, showIcon) {
@@ -727,15 +807,6 @@ function attachVerticalTip(el, vertical, showIcon) {
   attachSheetTip(el, `Vertical: ${vertical.name}`, vertical.description, showIcon);
 }
 
-function statusDotColor(statusLabel) {
-  const label = (statusLabel || '').toLowerCase();
-  if (label.includes('validated')) return CIIIC_LIME;
-  if (label.includes('under review') || label.includes('review')) return '#888888';
-  if (label.includes('not active')) return '#666666';
-  if (label.includes('only international')) return '#555555';
-  return '#888888';
-}
-
 function renderFooterNote(glossary) {
   const footerNote = document.getElementById('footer-note');
   if (!footerNote) return;
@@ -754,29 +825,7 @@ function renderFooterNote(glossary) {
   footerNote.appendChild(copyright);
 }
 
-function renderLegend(statuses, glossary) {
-  const legend = document.getElementById('legend');
-  legend.innerHTML = '';
-
-  statuses.forEach((status, index) => {
-    const item = document.createElement('div');
-    item.className = 'legend-item';
-
-    const dot = document.createElement('div');
-    dot.className = 'legend-dot';
-    dot.style.background = statusDotColor(status.label);
-
-    const label = document.createElement('span');
-    label.textContent = status.label;
-
-    item.appendChild(dot);
-    item.appendChild(label);
-    attachGlossaryTip(item, glossary, [status.label], status.description, false);
-    legend.appendChild(item);
-  });
-}
-
-function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary) {
+function renderMatrix(layers, verticals, categories, orgCountMap, glossary) {
   const body = document.getElementById('matrix-body');
   body.innerHTML = '';
 
@@ -812,25 +861,22 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
       cell.className = 'cell';
       cell.style.background = theme.cellBg;
 
-      const cellEntries = entries.filter(e => e['Layer'] === layer.id && e['Vertical'] === vertical.id);
+      const cellCategories = categories.filter(
+        category => category.layerId === layer.id && category.verticalId === vertical.id
+      );
 
-      cellEntries.forEach(entry => {
-        const count = orgCountMap[entry['Entry_ID']] || 0;
-        const statusLabel = statusMap[entry['Validation Status']] || '';
+      cellCategories.forEach(category => {
+        const count = orgCountMap[category.id] || 0;
 
         const el = document.createElement('div');
         el.className = 'entry';
-
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        dot.style.background = statusDotColor(statusLabel);
 
         const text = document.createElement('div');
         text.className = 'entry-text';
 
         const name = document.createElement('div');
         name.className = 'entry-name';
-        name.textContent = entry['Entry'] || '';
+        name.textContent = category.name;
 
         const countBadge = document.createElement('div');
         countBadge.className = 'entry-count';
@@ -838,14 +884,13 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
 
         text.appendChild(name);
         text.appendChild(countBadge);
-        el.appendChild(dot);
         el.appendChild(text);
-        attachEntryTip(el, entry, layer, vertical, count, statusLabel);
+        attachEntryTip(el, category, layer, vertical, count);
 
         cell.appendChild(el);
       });
 
-      if (cellEntries.length === 0) {
+      if (cellCategories.length === 0) {
         cell.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.2);">—</span>';
       }
 
@@ -860,12 +905,9 @@ function renderMatrix(layers, verticals, entries, statusMap, statusIndexById, or
 
 async function init() {
   try {
-    const [layersRaw, verticalsRaw, entries, orgEntries, statusesRaw, glossaryRaw] = await Promise.all([
-      fetchSheet('Layers'),
-      fetchSheet('Verticals'),
-      fetchSheet('Entries'),
-      fetchSheet('Org_Entries'),
-      fetchSheet('ReviewStatuses'),
+    const [categoryRaw, organizationsRaw, glossaryRaw] = await Promise.all([
+      fetchSheet('NEW Category'),
+      fetchSheet('NEW Organizations'),
       fetchSheet('Glossary')
     ]);
 
@@ -873,55 +915,21 @@ async function init() {
     applyPageCopy(glossary);
     initGlossaryPopover();
 
-    const layers = layersRaw
-      .filter(row => row['Layer_ID'])
-      .map(row => ({
-        id: row['Layer_ID'],
-        name: row['Layer'] || row['Layer_ID'],
-        description: row['Description'] || ''
-      }));
-
-    const verticals = verticalsRaw
-      .filter(row => row['Vertical_ID'])
-      .map(row => ({
-        id: row['Vertical_ID'],
-        name: row['Vertical'] || row['Vertical_ID'],
-        description: row['Description'] || ''
-      }));
-
-    const statuses = statusesRaw
-      .filter(row => row['ReviewStatus_ID'])
-      .map(row => ({
-        id: row['ReviewStatus_ID'],
-        label: row['Review Status'] || row['ReviewStatus_ID'],
-        description: row['Description'] || ''
-      }));
-
-    const statusMap = {};
-    const statusIndexById = {};
-    statuses.forEach((status, index) => {
-      statusMap[status.id] = status.label;
-      statusIndexById[status.id] = index;
-    });
-
-    const orgCountMap = {};
-    orgEntries.forEach(link => {
-      const eid = link['Entry_ID'];
-      if (eid) orgCountMap[eid] = (orgCountMap[eid] || 0) + 1;
-    });
+    const { layers, verticals, categories } = parseCategorySheet(categoryRaw);
+    const orgCountMap = buildOrgCountMap(organizationsRaw);
 
     document.documentElement.style.setProperty('--vertical-count', verticals.length);
 
     document.getElementById('layer-count-badge').textContent = `${layers.length} layer${layers.length !== 1 ? 's' : ''}`;
     document.getElementById('vertical-count-badge').textContent = `${verticals.length} vertical${verticals.length !== 1 ? 's' : ''}`;
-    document.getElementById('entry-count-badge').textContent = `${entries.length} entr${entries.length !== 1 ? 'ies' : 'y'}`;
-    const totalOrgs = new Set(orgEntries.map(l => l['Organization_ID']).filter(Boolean)).size;
-    document.getElementById('org-count-badge').textContent = `${totalOrgs} organisation${totalOrgs !== 1 ? 's' : ''}`;
+    document.getElementById('entry-count-badge').textContent = `${categories.length} categor${categories.length !== 1 ? 'ies' : 'y'}`;
+    const activeOrgs = organizationsRaw.filter(org => org['IX'] === 'Active');
+    const totalOrgs = new Set(activeOrgs.map(org => org['Organization_ID']).filter(Boolean)).size;
+    document.getElementById('org-count-badge').textContent = `${totalOrgs} active organisation${totalOrgs !== 1 ? 's' : ''}`;
     document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleDateString('en-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    renderLegend(statuses, glossary);
     renderFooterNote(glossary);
-    renderMatrix(layers, verticals, entries, statusMap, statusIndexById, orgCountMap, glossary);
+    renderMatrix(layers, verticals, categories, orgCountMap, glossary);
 
   } catch (e) {
     document.getElementById('matrix-body').innerHTML = `<div class="error">Could not load data. Make sure the Google Sheet is publicly readable (Share → Anyone with the link → Viewer).<br><br>Error: ${e.message}</div>`;
