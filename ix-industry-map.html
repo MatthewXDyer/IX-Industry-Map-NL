@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.16">
+<meta name="version" content="0.1.17">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,6 +220,15 @@
     pointer-events: auto;
     padding-top: 2.25rem;
     padding-right: 2.25rem;
+  }
+
+  .glossary-popover--locked::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: -12px;
+    right: -12px;
+    height: 14px;
   }
 
   .glossary-popover-close {
@@ -1118,12 +1127,15 @@ function resolveGlossaryText(glossary, keys, fallback) {
   return null;
 }
 
-function positionGlossaryPopover(el) {
+function positionGlossaryPopover(el, options = {}) {
+  const locked = Boolean(options.locked);
   const rect = el.getBoundingClientRect();
   const pop = glossaryPopover;
   pop.hidden = false;
   const margin = 10;
-  let top = rect.bottom + margin;
+  const gap = locked ? 0 : 2;
+  const overlap = locked ? 8 : 0;
+  let top = rect.bottom + gap - overlap;
   let left = rect.left + rect.width / 2 - pop.offsetWidth / 2;
 
   if (left + pop.offsetWidth > window.innerWidth - margin) {
@@ -1132,7 +1144,7 @@ function positionGlossaryPopover(el) {
   if (left < margin) left = margin;
 
   if (top + pop.offsetHeight > window.innerHeight - margin) {
-    top = rect.top - pop.offsetHeight - margin;
+    top = rect.top - pop.offsetHeight - gap + overlap;
   }
 
   pop.style.top = `${top}px`;
@@ -1195,7 +1207,7 @@ function showEntryPopover(el, category, layer, vertical, count, locked) {
 
   glossaryPopover.classList.toggle('glossary-popover--locked', locked);
   glossaryPopover.hidden = false;
-  positionGlossaryPopover(el);
+  positionGlossaryPopover(el, { locked });
 }
 
 function unlockEntryPopover() {
@@ -1231,7 +1243,7 @@ function hideGlossaryPopover() {
 function scheduleHideGlossaryPopover() {
   clearTimeout(glossaryHideTimer);
   if (!glossaryPinned && !entryPopoverLocked) {
-    glossaryHideTimer = setTimeout(hideGlossaryPopover, 120);
+    glossaryHideTimer = setTimeout(hideGlossaryPopover, 250);
   }
 }
 
@@ -1282,7 +1294,7 @@ function attachEntryTip(el, category, layer, vertical, count) {
   el.setAttribute('role', 'button');
 
   const openPreview = () => {
-    if (entryPopoverLocked && lockedEntryEl === el) return;
+    if (entryPopoverLocked) return;
     showEntryPopover(el, category, layer, vertical, count, false);
   };
 
