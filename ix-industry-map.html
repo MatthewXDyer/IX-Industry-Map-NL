@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.17">
+<meta name="version" content="0.1.19">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -443,8 +443,9 @@
     line-height: 1.45;
     color: var(--text-muted);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
   }
 
@@ -830,9 +831,7 @@ function parseCategorySheet(rows) {
 
 function buildOrgCountMap(organizations) {
   const orgCountMap = {};
-  organizations
-    .filter(org => org['IX'] === 'Active')
-    .forEach(org => {
+  organizations.forEach(org => {
       ['Category_ID', 'Category_ID (2)'].forEach(key => {
         const categoryId = org[key];
         if (categoryId) orgCountMap[categoryId] = (orgCountMap[categoryId] || 0) + 1;
@@ -859,9 +858,7 @@ function normalizeOrganization(org) {
 
 function buildOrgsByCategory(organizations) {
   const map = {};
-  organizations
-    .filter(org => org['IX'] === 'Active')
-    .forEach(org => {
+  organizations.forEach(org => {
       const normalized = normalizeOrganization(org);
       ['Category_ID', 'Category_ID (2)'].forEach(key => {
         const categoryId = org[key];
@@ -1027,7 +1024,7 @@ function renderOrgPanelList(items) {
   list.innerHTML = '';
 
   if (items.length === 0) {
-    list.innerHTML = '<div class="org-panel-empty">No active organisations in this category.</div>';
+    list.innerHTML = '<div class="org-panel-empty">No organisations in this category.</div>';
     return;
   }
 
@@ -1455,9 +1452,8 @@ async function init() {
     document.getElementById('layer-count-badge').textContent = `${layers.length} layer${layers.length !== 1 ? 's' : ''}`;
     document.getElementById('vertical-count-badge').textContent = `${verticals.length} vertical${verticals.length !== 1 ? 's' : ''}`;
     document.getElementById('entry-count-badge').textContent = `${categories.length} categor${categories.length !== 1 ? 'ies' : 'y'}`;
-    const activeOrgs = organizationsRaw.filter(org => org['IX'] === 'Active');
-    const totalOrgs = new Set(activeOrgs.map(org => org['Organization_ID']).filter(Boolean)).size;
-    document.getElementById('org-count-badge').textContent = `${totalOrgs} active organisation${totalOrgs !== 1 ? 's' : ''}`;
+    const totalOrgs = new Set(organizationsRaw.map(org => org['Organization_ID']).filter(Boolean)).size;
+    document.getElementById('org-count-badge').textContent = `${totalOrgs} organisation${totalOrgs !== 1 ? 's' : ''}`;
     document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleDateString('en-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
     renderFooterNote(glossary);
