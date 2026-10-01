@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="0.1.19">
+<meta name="version" content="0.1.20">
 <title>Dutch IX Industry Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -850,7 +850,6 @@ function normalizeOrganization(org) {
     id: org['Organization_ID'],
     name: org['Name'] ? String(org['Name']) : '',
     website: org['Website'] ? String(org['Website']) : '',
-    description: org['Description'] ? String(org['Description']) : '',
     city: org['City'] ? String(org['City']) : '',
     focus: focusParts.join(' · ')
   };
@@ -1045,13 +1044,6 @@ function renderOrgPanelList(items) {
       row.appendChild(meta);
     }
 
-    if (org.description) {
-      const desc = document.createElement('div');
-      desc.className = 'org-row-desc';
-      desc.textContent = org.description;
-      row.appendChild(desc);
-    }
-
     if (org.website) {
       const link = document.createElement('a');
       link.className = 'org-row-link';
@@ -1074,7 +1066,7 @@ function filterOrgPanelList(query) {
   }
 
   const filtered = orgPanelItems.filter(org => {
-    const haystack = [org.name, org.city, org.focus, org.description, org.website]
+    const haystack = [org.name, org.city, org.focus, org.website]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
